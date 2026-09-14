@@ -7,6 +7,10 @@ Esta entrega é um site estático moderno, responsivo e pronto para publicação
 - Layout novo, responsivo e animado;
 - Catálogo unificado de cartas de imóvel e veículo;
 - Filtros por categoria, texto, faixa de crédito e prazo;
+- Exibição progressiva de 6 cartas no desktop, 4 no tablet e 3 no celular;
+- Assistente com três modos: consórcio, financiamento e comparação;
+- Estimativa de financiamento pelo sistema Price, com custo total do cliente, juros, parcelas e referências configuráveis por banco;
+- Sugestão de cartas reais próximas ao valor informado, sem criar condições fictícias de consórcio;
 - Modal com detalhes e mensagem personalizada para WhatsApp;
 - Formulário com validação, LGPD e a mesma integração de leads do site antigo;
 - Conteúdo institucional, FAQ, depoimentos e links para os artigos existentes;
@@ -25,6 +29,39 @@ Administradora | Crédito | Entrada | Saldo a pagar | Parcela | Observação
 O campo `Saldo a pagar` é exibido como quantidade de parcelas restantes, como acontece no site atual. Para remover uma carta do portal, remova ou oculte a linha correspondente na planilha publicada. Depois da atualização, o Google pode levar alguns minutos para refletir os dados públicos.
 
 As URLs das duas planilhas estão no início de [`app.js`](app.js). Caso a Cristal crie uma nova planilha, basta substituir as URLs em `CRISTAL.sheets`.
+
+## Simulador e referências financeiras
+
+Os perfis usados no financiamento ficam centralizados no bloco `FINANCE_SIMULATION_PROFILES`, no início de [`app.js`](app.js). Há quatro perfis didáticos por categoria: CAIXA, Santander, Bradesco e Itaú. O Banco Inter não faz parte da fonte atual. Para revisar um cenário, altere o `monthlyRate` (taxa mensal em formato decimal) do banco correspondente.
+
+Essas taxas são **perfis demonstrativos configurados no site**. Elas não são ofertas comerciais, cotações em tempo real ou promessas das instituições citadas. A CAIXA foi mantida como o cenário mais competitivo, e os demais bancos formam níveis distintos para facilitar uma comparação didática.
+
+O cálculo usa o sistema Price e mantém precisão interna até a exibição final. Para cada banco, o site apresenta valor do bem, entrada, valor financiado, prazo, taxa mensal, taxa anual equivalente, parcela mensal, soma das parcelas, juros totais, total pago pelo cliente e custo adicional sobre o valor do bem. As identidades usadas são:
+
+```text
+total pago pelo cliente = entrada + soma das parcelas
+juros totais = soma das parcelas - valor financiado
+```
+
+Uma taxa igual a zero também é tratada corretamente, dividindo o principal pelo prazo. Entradas negativas, iguais ou superiores ao valor do bem e prazos inválidos são bloqueados. CET, seguros, tarifas e indexadores não são projetados; essa limitação aparece junto ao resultado.
+
+No modo consórcio, o assistente consulta somente os campos reais da planilha e ordena oportunidades do mesmo tipo pela proximidade do crédito desejado. Um total aritmético só é exibido quando a carta publicada contém entrada, parcela e prazo numéricos; nesse caso, ele corresponde a `entrada + parcela publicada × prazo restante`. Esse número não é tratado como total contratual nem como promessa de economia, pois reajustes, fundo de reserva, seguros, taxa administrativa e outras condições podem não estar separados nos dados públicos. Quando faltam dados — como ocorre nas cartas de imóvel cuja entrada está “Sob consulta” — o site informa claramente que o total não é calculável.
+
+Os prazos disponíveis ficam em `SIMULATION_TERMS`. A data de nascimento é validada somente no navegador e descartada antes da montagem dos resultados e da mensagem do WhatsApp.
+
+### Pontos para integração futura
+
+- Substituir as taxas de referência por uma API oficial ou rotina interna de atualização;
+- Incluir CET, tarifas, seguros e indexadores somente quando houver uma fonte contratual confiável;
+- Adicionar regras de elegibilidade por instituição, caso sejam formalmente fornecidas;
+- Levar a busca de cartas para uma API própria se as planilhas deixarem de ser públicas;
+- Versionar data e fonte de cada taxa para facilitar auditoria comercial.
+
+### Limitações da arquitetura atual
+
+O site é estático e faz a leitura das planilhas diretamente no navegador. Se o Google alterar permissões, formato ou disponibilidade dos CSVs, a categoria afetada pode ficar temporariamente indisponível. O carregamento foi preparado para manter a outra categoria ativa quando apenas uma planilha falhar.
+
+As taxas são mantidas manualmente no código. Elas devem ser revisadas pela equipe antes da publicação e periodicamente depois disso. O resultado é informativo e não substitui proposta, análise de crédito ou documento contratual.
 
 ## Publicação
 

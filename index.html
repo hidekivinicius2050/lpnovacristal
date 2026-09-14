@@ -3,19 +3,20 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Cartas contempladas para imóveis e veículos em Brasília. Há mais de 30 anos, a Cristal Consórcios acompanha cada etapa com transparência.">
+    <meta name="description" content="Compare consórcio e financiamento, simule cenários estimados e encontre cartas contempladas reais para imóveis e veículos na Cristal Consórcios.">
     <meta name="theme-color" content="#07192a">
-    <meta property="og:title" content="Cristal Consórcios | Cartas contempladas em Brasília">
-    <meta property="og:description" content="Crédito para imóveis e veículos, com acompanhamento do primeiro contato à transferência.">
-    <title>Cristal Consórcios | Cartas contempladas em Brasília</title>
+    <meta property="og:title" content="Cristal Consórcios | Simule, compare e encontre sua carta">
+    <meta property="og:description" content="Compare cenários de consórcio e financiamento e veja oportunidades reais para imóveis e veículos.">
+    <title>Cristal Consórcios | Simulador e cartas contempladas</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307192a'/%3E%3Cpath d='M32 9 51 32 32 55 13 32Z' fill='none' stroke='%23d4af37' stroke-width='5'/%3E%3Cpath d='M32 9v46M13 32h38' stroke='%236cc9f4' stroke-width='2' opacity='.8'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <script defer src="app.js"></script>
+    <link rel="stylesheet" href="styles.css?v=20260914-2">
+    <script defer src="app.js?v=20260914-2"></script>
   </head>
   <body>
-    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
 
     <header class="site-header" id="topo">
       <div class="shell nav-wrap">
@@ -28,10 +29,11 @@
         </button>
 
         <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+          <a href="#simulador">Simular e comparar</a>
           <a href="#cartas">Cartas disponíveis</a>
           <a href="#como-funciona">Como funciona</a>
           <a href="#sobre">A Cristal</a>
-          <a href="#conteudo">Conteúdo</a>
+          <a href="#artigos">Conteúdo</a>
           <a href="#contato">Contato</a>
         </nav>
 
@@ -47,11 +49,12 @@
         <div class="hero-overlay"></div>
         <div class="hero-crystal crystal-a"></div>
         <div class="hero-crystal crystal-b"></div>
-        <div class="shell hero-content" id="conteudo">
+        <div class="shell hero-content">
           <p class="eyebrow eyebrow-light"><span class="pulse-dot"></span> Brasília · desde 1996</p>
           <h1 id="hero-title">Crédito contemplado, <em>decisão transparente.</em></h1>
           <p class="hero-copy">Cartas para imóveis e veículos com uma consultoria que acompanha sua operação do primeiro contato à transferência do crédito.</p>
           <div class="hero-actions">
+            <a class="button button-gold" href="#simulador">Simular e comparar <span aria-hidden="true">↓</span></a>
             <a class="button button-primary" href="#cartas">Ver cartas disponíveis <span aria-hidden="true">↓</span></a>
             <a class="text-link text-link-light" href="#como-funciona">Entenda o processo <span aria-hidden="true">→</span></a>
           </div>
@@ -69,6 +72,64 @@
           <div><span class="trust-icon">◇</span> Pagamento direto à administradora</div>
           <div><span class="trust-icon">◇</span> Administradoras autorizadas pelo Banco Central</div>
           <div><span class="trust-icon">◇</span> Acompanhamento até a transferência</div>
+        </div>
+      </section>
+      <section class="decision section" id="simulador" aria-labelledby="simulador-title">
+        <div class="decision-orb decision-orb-left"></div><div class="decision-orb decision-orb-right"></div>
+        <div class="shell decision-shell">
+          <div class="section-heading decision-heading reveal">
+            <p class="eyebrow">ASSISTENTE DE DECISÃO DE CRÉDITO</p>
+            <h2 id="simulador-title">Compare antes de <span>decidir.</span></h2>
+            <p>Simule seu consórcio, financiamento ou compare as duas opções para descobrir qual alternativa pode fazer mais sentido para o seu planejamento.</p>
+          </div>
+
+          <div class="decision-mode-grid reveal" role="radiogroup" aria-label="O que deseja fazer">
+            <button class="decision-mode active" type="button" role="radio" aria-checked="true" tabindex="0" data-simulation-mode="consorcio">
+              <span class="mode-icon">◇</span><strong>Consórcio</strong><small>Simule uma carta de crédito</small>
+            </button>
+            <button class="decision-mode" type="button" role="radio" aria-checked="false" tabindex="-1" data-simulation-mode="financiamento">
+              <span class="mode-icon">⌂</span><strong>Financiamento</strong><small>Veja uma estimativa de financiamento</small>
+            </button>
+            <button class="decision-mode" type="button" role="radio" aria-checked="false" tabindex="-1" data-simulation-mode="comparar">
+              <span class="mode-icon">⇄</span><strong>Comparar</strong><small>Compare consórcio e financiamento</small>
+            </button>
+          </div>
+
+          <form class="simulation-form reveal" id="simulation-form" novalidate>
+            <div class="simulation-step-label"><span>01</span> O que você pretende adquirir?</div>
+            <div class="asset-choices" role="radiogroup" aria-label="Tipo de bem">
+              <button class="asset-choice active" type="button" role="radio" aria-checked="true" tabindex="0" data-simulation-asset="imovel"><span aria-hidden="true">⌂</span><strong>Imóvel</strong></button>
+              <button class="asset-choice" type="button" role="radio" aria-checked="false" tabindex="-1" data-simulation-asset="veiculo"><span aria-hidden="true">◒</span><strong>Automóvel</strong></button>
+            </div>
+
+            <div class="simulation-step-label"><span>02</span> Conte um pouco do seu plano</div>
+            <div class="simulation-fields">
+              <div class="field simulation-field">
+                <label for="simulation-value" id="simulation-value-label">Valor da carta de crédito</label>
+                <input id="simulation-value" name="valor" type="text" inputmode="decimal" autocomplete="off" placeholder="R$ 500.000,00" aria-describedby="simulation-feedback" required>
+              </div>
+              <div class="field simulation-field" id="simulation-contribution-field">
+                <label for="simulation-contribution" id="simulation-contribution-label">Lance disponível <span>(opcional)</span></label>
+                <input id="simulation-contribution" name="entrada" type="text" inputmode="decimal" autocomplete="off" placeholder="R$ 100.000,00" aria-describedby="simulation-contribution-help simulation-feedback">
+                <small class="simulation-help" id="simulation-contribution-help">No financiamento, digite 0 se não houver entrada.</small>
+              </div>
+              <div class="field simulation-field">
+                <label for="simulation-term">Prazo desejado</label>
+                <select id="simulation-term" name="prazo" aria-describedby="simulation-feedback" required></select>
+              </div>
+              <div class="field simulation-field">
+                <label for="simulation-birthdate">Data de nascimento</label>
+                <input id="simulation-birthdate" name="nascimento" type="date" autocomplete="bday" aria-describedby="simulation-feedback" required>
+              </div>
+            </div>
+            <div class="simulation-form-footer">
+              <p><span>◇</span> A data de nascimento é usada apenas para orientar a simulação e não é enviada pelo site.</p>
+              <button class="button button-gold" type="submit" id="simulation-submit">Simular carta de crédito <span aria-hidden="true">→</span></button>
+            </div>
+            <p class="simulation-feedback" id="simulation-feedback" role="alert"></p>
+          </form>
+
+          <section class="simulation-results" id="simulation-results" aria-live="polite" hidden></section>
         </div>
       </section>
 
@@ -154,6 +215,10 @@
 
           <div class="cards-grid" id="cards-grid" aria-live="polite" aria-busy="true">
             <div class="card-skeleton"></div><div class="card-skeleton"></div><div class="card-skeleton"></div>
+          </div>
+          <div class="catalogue-more" id="catalogue-more" hidden>
+            <button class="button button-outline" id="toggle-catalogue" type="button">Ver mais cartas <span aria-hidden="true">↓</span></button>
+            <p id="catalogue-visible-count"></p>
           </div>
 
           <div class="catalogue-bottom reveal">
@@ -242,7 +307,7 @@
         </div>
       </section>
 
-      <section class="section insights" id="conteudo" aria-labelledby="conteudo-title">
+      <section class="section insights" id="artigos" aria-labelledby="conteudo-title">
         <div class="shell">
           <div class="section-heading split-heading reveal">
             <div><p class="eyebrow">CONTEÚDO PARA DECIDIR MELHOR</p><h2 id="conteudo-title">Informação clara faz parte do nosso atendimento.</h2></div>
@@ -294,7 +359,7 @@
     <footer class="site-footer" id="politica">
       <div class="shell footer-top">
         <div class="footer-brand"><img src="assets/logo.png" alt="Cristal Consórcios"><p>Cartas contempladas e consórcios com experiência, clareza e acompanhamento real.</p></div>
-        <div><h2>Navegue</h2><a href="#cartas">Cartas disponíveis</a><a href="#como-funciona">Como funciona</a><a href="#sobre">Sobre a Cristal</a><a href="#conteudo">Conteúdo</a></div>
+        <div><h2>Navegue</h2><a href="#cartas">Cartas disponíveis</a><a href="#como-funciona">Como funciona</a><a href="#sobre">Sobre a Cristal</a><a href="#artigos">Conteúdo</a></div>
         <div><h2>Atendimento</h2><p>Seg a Sex: 8h às 18h<br>Sáb: 8h às 12h<br>Dom e feriados: fechado</p><a href="tel:+556133283000">(61) 3328-3000</a></div>
         <div><h2>Informações</h2><p>CNPJ: 07.901.305/0001-13</p><a href="https://maps.app.goo.gl/f9FGs6sPTx4xFeF66" target="_blank" rel="noopener">Asa Sul, Brasília — DF ↗</a><a href="https://cristalconsorcios.com/politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a></div>
       </div>
