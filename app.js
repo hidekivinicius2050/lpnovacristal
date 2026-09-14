@@ -56,6 +56,13 @@ const PERCENT_FORMATTER = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2
 });
 
+const ACTION_ICON_IDS = Object.freeze({
+  upRight: "icon-arrow-up-right",
+  right: "icon-arrow-right",
+  down: "icon-arrow-down",
+  up: "icon-arrow-up"
+});
+
 let allLetters = [];
 let selectedCategory = "todos";
 let activeLetters = [];
@@ -104,6 +111,12 @@ function escapeHTML(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function actionIcon(name) {
+  const iconId = ACTION_ICON_IDS[name];
+  if (!iconId) return "";
+  return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#${iconId}"></use></svg>`;
 }
 
 function normalize(value) {
@@ -249,7 +262,7 @@ async function loadPortfolio() {
     dom.cards.innerHTML = `
       <div class="catalogue-error">
         <p>Não foi possível carregar o portfólio neste momento.</p>
-        <a class="text-link" href="${whatsappLink("Olá, não consegui ver as cartas disponíveis no site. Poderia me ajudar?")}" target="_blank" rel="noopener">Falar com um especialista <span aria-hidden="true">→</span></a>
+        <a class="text-link" href="${whatsappLink("Olá, não consegui ver as cartas disponíveis no site. Poderia me ajudar?")}" target="_blank" rel="noopener">Falar com um especialista ${actionIcon("right")}</a>
       </div>`;
     dom.status.innerHTML = "<span></span> Consulte a equipe";
   }
@@ -332,7 +345,7 @@ function letterCard(letter, index) {
         <p class="letter-observation">${escapeHTML(letter.observation)}</p>
       </div>
       <button class="letter-action" type="button" data-letter-index="${index}" aria-label="Ver detalhes da carta de ${escapeHTML(letter.admin)} no valor de ${escapeHTML(letter.credit)}">
-        Ver detalhes e conversar <span aria-hidden="true">↗</span>
+        Ver detalhes e conversar <span class="letter-action-icon" aria-hidden="true">${actionIcon("upRight")}</span>
       </button>
     </article>`;
 }
@@ -372,8 +385,8 @@ function renderLetters() {
   const showingAll = displayedLetters.length >= activeLetters.length;
   dom.catalogueMore.hidden = !needsPagination;
   dom.catalogueToggle.innerHTML = showingAll
-    ? 'Mostrar menos <span aria-hidden="true">↑</span>'
-    : 'Ver mais cartas <span aria-hidden="true">↓</span>';
+    ? `Mostrar menos ${actionIcon("up")}`
+    : `Ver mais cartas ${actionIcon("down")}`;
   dom.catalogueToggle.setAttribute("aria-expanded", String(showingAll));
   dom.catalogueVisibleCount.textContent = `${displayedLetters.length} de ${activeLetters.length} oportunidades exibidas`;
 }
@@ -531,10 +544,10 @@ function applySimulationMode(mode, { preserveResults = false } = {}) {
     : isFinance ? "Entrada para o financiamento" : "Entrada para financiar / lance disponível";
   dom.simulationContribution.required = !isConsortium;
   dom.simulationSubmit.innerHTML = isConsortium
-    ? 'Encontrar cartas reais <span aria-hidden="true">→</span>'
+    ? `Encontrar cartas reais ${actionIcon("right")}`
     : isFinance
-      ? 'Calcular estimativa <span aria-hidden="true">→</span>'
-      : 'Comparar cenários <span aria-hidden="true">→</span>';
+      ? `Calcular estimativa ${actionIcon("right")}`
+      : `Comparar cenários ${actionIcon("right")}`;
   if (!preserveResults) resetSimulationResults();
 }
 
@@ -848,8 +861,8 @@ function resultActions(data) {
   const message = `Olá! Fiz ${context} no site para ${assetName}, no valor de ${formatCurrency(data.value)}${contribution}, em ${data.term} meses. Gostaria de falar com um especialista.`;
   return `
     <div class="result-cta">
-      <a class="button button-gold" href="${whatsappLink(message)}" target="_blank" rel="noopener">Falar com um especialista <span aria-hidden="true">↗</span></a>
-      <button class="button button-outline" type="button" id="simulation-view-all">Ver cartas disponíveis <span aria-hidden="true">↓</span></button>
+      <a class="button button-gold" href="${whatsappLink(message)}" target="_blank" rel="noopener">Falar com um especialista ${actionIcon("upRight")}</a>
+      <button class="button button-outline" type="button" id="simulation-view-all">Ver cartas disponíveis ${actionIcon("down")}</button>
       <button class="result-again" type="button" id="simulation-again">Comparar novamente</button>
     </div>`;
 }
@@ -1103,6 +1116,55 @@ function setupLeadForm() {
   });
 }
 
+function setupWhatsappFloatAvoidance() {
+  const button = document.querySelector(".whatsapp-float");
+  if (!button) return;
+
+  const protectedSelectors = [
+    ".service-card",
+    ".letter-card",
+    ".simulation-form",
+    ".simulation-results",
+    ".filter-panel",
+    ".catalogue-more",
+    ".catalogue-bottom",
+    ".article-grid",
+    ".contact",
+    ".site-footer"
+  ].join(",");
+  let animationFrame = 0;
+
+  const rectanglesOverlap = (first, second) => (
+    first.left < second.right + 8
+    && first.right > second.left - 8
+    && first.top < second.bottom + 8
+    && first.bottom > second.top - 8
+  );
+
+  const update = () => {
+    animationFrame = 0;
+    const buttonRect = button.getBoundingClientRect();
+    const shouldHide = [...document.querySelectorAll(protectedSelectors)].some((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && rectanglesOverlap(buttonRect, rect);
+    });
+    button.classList.toggle("is-obscuring", shouldHide);
+  };
+
+  const scheduleUpdate = () => {
+    if (animationFrame) return;
+    animationFrame = requestAnimationFrame(update);
+  };
+
+  window.addEventListener("scroll", scheduleUpdate, { passive: true });
+  window.addEventListener("resize", scheduleUpdate, { passive: true });
+  const observer = new MutationObserver(scheduleUpdate);
+  observer.observe(dom.cards, { childList: true, subtree: true });
+  observer.observe(dom.simulationResults, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
+  document.fonts?.ready.then(scheduleUpdate);
+  scheduleUpdate();
+}
+
 function setupCookies() {
   const banner = document.querySelector("#cookie-banner");
   const button = document.querySelector("#accept-cookies");
@@ -1151,6 +1213,7 @@ function init() {
   setupLeadForm();
   setupCookies();
   setupModal();
+  setupWhatsappFloatAvoidance();
   loadPortfolio();
 }
 
