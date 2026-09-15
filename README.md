@@ -13,8 +13,27 @@ Esta entrega é um site estático moderno, responsivo e pronto para publicação
 - Sugestão de cartas reais próximas ao valor informado, sem criar condições fictícias de consórcio;
 - Modal com detalhes e mensagem personalizada para WhatsApp;
 - Formulário com validação, LGPD e a mesma integração de leads do site antigo;
-- Conteúdo institucional, FAQ, depoimentos e links para os artigos existentes;
+- Conteúdo institucional, FAQ, depoimentos e um hub editorial próprio com 10 artigos internos;
 - Aviso de cookies e acessibilidade básica.
+
+## Área de conteúdo
+
+O hub editorial está em `conteudo/` e todas as matérias são páginas HTML estáticas no próprio projeto. Os dados dos 10 artigos ficam centralizados em [`articles-data.js`](articles-data.js), enquanto [`scripts/generate-content.js`](scripts/generate-content.js) mantém um único template para o hub, os artigos, a página 404, o sitemap e o arquivo de regras para buscadores.
+
+Cada artigo possui título e descrição exclusivos, canonical, Open Graph, Twitter Card, `BlogPosting`, `BreadcrumbList`, trilha de navegação, tempo de leitura, data real de atualização, índice, CTA e três conteúdos relacionados. A implementação não depende de CMS ou biblioteca externa.
+
+Para atualizar o conteúdo ou regenerar as páginas:
+
+```text
+node scripts/generate-content.js
+node scripts/validate-content.js
+```
+
+Para abrir uma prévia local em `http://127.0.0.1:4175`, execute `node scripts/serve.js`.
+
+O domínio canônico padrão é `https://lpnovacristal.vercel.app`. Se o domínio oficial mudar, gere novamente definindo `SITE_ORIGIN` no ambiente antes de executar o gerador e atualize também as URLs absolutas de SEO no `<head>` da página inicial.
+
+Os dados empresariais usados nos rodapés e nos schemas das páginas geradas ficam centralizados em [`company-data.js`](company-data.js). A validação automática também confere razão social, nome fantasia, CNPJ, e-mail, endereço, município, UF e CEP em todas as páginas públicas.
 
 ## Como publicar ou atualizar cartas
 
@@ -75,7 +94,7 @@ As taxas são mantidas manualmente no código. Elas devem ser revisadas pela equ
 - Conferir os dados e as condições das cartas na planilha;
 - Confirmar que o endpoint de leads do formulário ainda é o correto;
 - Validar a Política de Privacidade e os Termos de Uso com responsável jurídico;
-- Adicionar endereço completo no mapa, caso desejado;
+- Conferir periodicamente se os dados cadastrais continuam iguais aos registros oficiais;
 - Conectar domínio e configurar métricas/Google Search Console.
 
 Os valores, disponibilidade e condições das cartas são carregados do portfólio em tempo real, mas toda operação continua sujeita à análise cadastral, documentação e administradora.
