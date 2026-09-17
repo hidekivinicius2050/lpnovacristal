@@ -14,7 +14,21 @@ Esta entrega é um site estático moderno, responsivo e pronto para publicação
 - Modal com detalhes e mensagem personalizada para WhatsApp;
 - Formulário com validação, LGPD e a mesma integração de leads do site antigo;
 - Conteúdo institucional, FAQ, depoimentos e um hub editorial próprio com 10 artigos internos;
+- Simulador com estratégias separadas de alavancagem patrimonial e revenda da cota, comparação de até três cenários e compartilhamento por URL;
 - Aviso de cookies e acessibilidade básica.
+
+## Simulador de estratégia
+
+A rota `simulador/` possui interface própria em [`simulador/index.html`](simulador/index.html). A revenda mantém suas regras retrocompatíveis em [`simulador/simulation-engine.js`](simulador/simulation-engine.js) e interações em [`simulador/simulador.js`](simulador/simulador.js). A alavancagem patrimonial usa o motor separado [`simulador/leverage-engine.js`](simulador/leverage-engine.js) e o controlador [`simulador/leverage-simulator.js`](simulador/leverage-simulator.js). Os dois modos compartilham somente componentes visuais e utilitários neutros, sem bibliotecas externas.
+
+Na alavancagem, o crédito estimado é o menor limite entre capital para o lance próprio, capacidade para o maior pagamento bruto projetado ao longo de todo o grupo e limites configurados. O valor discretizado é revalidado pelo motor completo para que arredondamentos não ultrapassem o orçamento. O aluguel começa somente após a contemplação considerada; patrimônio líquido é valor estimado do ativo menos saldo devedor; o cenário à vista aplica a mesma valorização ao capital inicial. Lance embutido nunca é tratado como desembolso próprio. Saldo residual no último mês é exibido como obrigação final, e os testes de variação preservam o mesmo crédito para isolar o efeito das premissas. Saldo, amortização pós-contemplação, correção e início de renda são premissas provisórias isoladas no motor para futura configuração por administradora.
+
+Para executar os testes determinísticos do motor financeiro:
+
+```text
+node scripts/test-simulator.js
+node scripts/test-leverage-simulator.js
+```
 
 ## Área de conteúdo
 

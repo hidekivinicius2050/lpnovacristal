@@ -8,6 +8,7 @@ const CONTENT_ROOT = path.join(PROJECT_ROOT, "conteudo");
 const SITE_ORIGIN = (process.env.SITE_ORIGIN || "https://lpnovacristal.vercel.app").replace(/\/$/, "");
 const UPDATED_ISO = "2026-09-15";
 const UPDATED_LABEL = "15 de setembro de 2026";
+const SIMULATOR_UPDATED_ISO = "2026-09-17";
 const WHATSAPP_URL = "https://wa.me/556133283000?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20Cristal%20Cons%C3%B3rcios.";
 
 const articles = require(path.join(PROJECT_ROOT, "articles-data.js"));
@@ -118,7 +119,7 @@ function header(prefix, contentHref) {
         <a class="brand" href="${prefix}" aria-label="Cristal Consórcios — início"><img src="${prefix}assets/logo.png" alt="Cristal Consórcios"></a>
         <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="content-nav" data-content-menu-toggle><span></span><span></span><span></span></button>
         <nav class="main-nav" id="content-nav" aria-label="Navegação principal" data-content-menu>
-          <a href="${prefix}#simulador">Simular e comparar</a>
+          <a href="${prefix}simulador/">Simulador</a>
           <a href="${prefix}#cartas">Cartas disponíveis</a>
           <a href="${prefix}#como-funciona">Como funciona</a>
           <a href="${prefix}#sobre">A Cristal</a>
@@ -134,7 +135,7 @@ function footer(prefix, contentHref) {
   return `<footer class="site-footer content-footer">
       <div class="shell footer-top">
         <div class="footer-brand"><img src="${prefix}assets/logo.png" alt="Cristal Consórcios"><p>Cartas contempladas e consórcios com experiência, clareza e acompanhamento real.</p></div>
-        <div><h2>Navegue</h2><a href="${prefix}#cartas">Cartas disponíveis</a><a href="${prefix}#como-funciona">Como funciona</a><a href="${prefix}#sobre">Sobre a Cristal</a><a href="${contentHref}">Conteúdo</a></div>
+        <div><h2>Navegue</h2><a href="${prefix}simulador/">Simulador</a><a href="${prefix}#cartas">Cartas disponíveis</a><a href="${prefix}#como-funciona">Como funciona</a><a href="${prefix}#sobre">Sobre a Cristal</a><a href="${contentHref}">Conteúdo</a></div>
         <div><h2>Atendimento</h2><p>Seg a Sex: 8h às 18h<br>Dom e feriados: fechado</p><a href="tel:${escapeHtml(company.phoneE164)}">${escapeHtml(company.phoneDisplay)}</a><a href="mailto:${escapeHtml(company.email)}">${escapeHtml(company.email)}</a></div>
         <div class="footer-company"><h2>Dados cadastrais</h2><p><span class="footer-label">Nome empresarial</span>${escapeHtml(company.legalName)}</p><p><span class="footer-label">Nome fantasia</span>${escapeHtml(company.tradeName)}</p><p><span class="footer-label">CNPJ</span>${escapeHtml(company.taxId)}</p><address><span class="footer-label">Endereço</span><a class="footer-address" href="${escapeHtml(company.mapUrl)}" target="_blank" rel="noopener">${escapeHtml(company.address.streetAddress)}<br>${escapeHtml(company.address.district)} · ${escapeHtml(company.address.city)}/${escapeHtml(company.address.state)} · CEP ${escapeHtml(company.address.postalCode)} ${icon("arrow-up-right", "footer-external-icon")}</a></address><a class="footer-policy" href="https://cristalconsorcios.com/politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a></div>
       </div>
@@ -237,7 +238,7 @@ function renderHub() {
 
           <section class="hub-cta reveal" data-reveal data-whatsapp-avoid aria-labelledby="hub-cta-title">
             <div><p class="content-kicker">DO CONTEÚDO PARA A PRÁTICA</p><h2 id="hub-cta-title">Organize seus números e conheça as opções atuais.</h2><p>Use o simulador como referência inicial ou consulte as cartas disponíveis. As condições reais devem ser confirmadas antes de qualquer decisão.</p></div>
-            <div class="hub-cta-actions"><a class="button button-gold" href="../#simulador">Simular e comparar ${icon("arrow-right")}</a><a class="button button-primary" href="../#cartas">Ver cartas disponíveis ${icon("arrow-right")}</a></div>
+            <div class="hub-cta-actions"><a class="button button-gold" href="../simulador/">Abrir o simulador ${icon("arrow-right")}</a><a class="button button-primary" href="../#cartas">Ver cartas disponíveis ${icon("arrow-right")}</a></div>
           </section>
         </div>
       </section>
@@ -429,10 +430,15 @@ function write(relativePath, content) {
 }
 
 function renderSitemap() {
-  const urls = ["/", "/conteudo/", ...articles.map((article) => `/conteudo/${article.slug}/`)];
+  const urls = [
+    { route: "/", lastmod: SIMULATOR_UPDATED_ISO },
+    { route: "/simulador/", lastmod: SIMULATOR_UPDATED_ISO },
+    { route: "/conteudo/", lastmod: UPDATED_ISO },
+    ...articles.map((article) => ({ route: `/conteudo/${article.slug}/`, lastmod: UPDATED_ISO }))
+  ];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((route) => `  <url><loc>${escapeHtml(`${SITE_ORIGIN}${route}`)}</loc><lastmod>${UPDATED_ISO}</lastmod></url>`).join("\n")}
+${urls.map(({ route, lastmod }) => `  <url><loc>${escapeHtml(`${SITE_ORIGIN}${route}`)}</loc><lastmod>${lastmod}</lastmod></url>`).join("\n")}
 </urlset>`;
 }
 

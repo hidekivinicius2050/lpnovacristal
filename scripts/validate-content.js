@@ -11,6 +11,7 @@ const errors = [];
 const htmlFiles = [
   path.join(root, "index.html"),
   path.join(root, "404.html"),
+  path.join(root, "simulador", "index.html"),
   path.join(root, "conteudo", "index.html"),
   ...articles.map((article) => path.join(root, "conteudo", article.slug, "index.html"))
 ];
@@ -110,6 +111,11 @@ for (const article of articles) {
 }
 
 const searchableFiles = htmlFiles.concat([
+  path.join(root, "simulador", "simulador.js"),
+  path.join(root, "simulador", "simulador.css"),
+  path.join(root, "simulador", "simulation-engine.js"),
+  path.join(root, "simulador", "leverage-engine.js"),
+  path.join(root, "simulador", "leverage-simulator.js"),
   path.join(root, "conteudo", "conteudo.js"),
   path.join(root, "conteudo", "conteudo.css")
 ]);
@@ -120,10 +126,26 @@ for (const file of searchableFiles) {
 }
 
 const sitemap = read(path.join(root, "sitemap.xml"));
+if (!sitemap.includes("/simulador/")) fail("sitemap.xml: rota do simulador ausente");
 for (const article of articles) {
   if (!sitemap.includes(`/conteudo/${article.slug}/`)) fail(`sitemap.xml: rota ausente para ${article.slug}`);
 }
-if ((sitemap.match(/<url>/g) || []).length !== articles.length + 2) fail("sitemap.xml: quantidade de URLs inesperada");
+if ((sitemap.match(/<url>/g) || []).length !== articles.length + 3) fail("sitemap.xml: quantidade de URLs inesperada");
+
+const simulatorHtml = read(path.join(root, "simulador", "index.html"));
+for (const id of [
+  "strategy-form", "strategy-chart-svg", "save-scenario", "share-simulation", "strategy-whatsapp",
+  "leverage-form", "leverage-chart-svg", "save-leverage-scenario", "share-leverage-simulation",
+  "leverage-whatsapp", "leverage-evolution-body", "calculation-dialog"
+]) {
+  if (!simulatorHtml.includes(`id="${id}"`)) fail(`simulador: componente obrigatório ausente (${id})`);
+}
+for (const asset of ["simulation-engine.js", "leverage-engine.js", "simulador.js", "leverage-simulator.js", "simulador.css"]) {
+  if (!simulatorHtml.includes(asset)) fail(`simulador: asset obrigatório ausente (${asset})`);
+}
+if (!simulatorHtml.includes('data-strategy="leverage"') || !simulatorHtml.includes('data-strategy="resale"')) {
+  fail("simulador: seletor das duas estratégias ausente");
+}
 
 const styles = read(path.join(root, "styles.css"));
 if (!styles.includes("#simulation-birthdate { padding-inline: 0; text-indent: 11px; }")) fail("Correção do campo de nascimento ausente");
