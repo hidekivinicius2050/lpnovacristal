@@ -24,11 +24,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css?v=20260916-1">
-    <link rel="stylesheet" href="simulador.css?v=20260916-2">
+    <link rel="stylesheet" href="simulador.css?v=20260917-1">
     <script defer src="simulation-engine.js?v=20260916-2"></script>
     <script defer src="leverage-engine.js?v=20260916-2"></script>
     <script defer src="simulador.js?v=20260916-2"></script>
-    <script defer src="leverage-simulator.js?v=20260916-2"></script>
+    <script defer src="leverage-simulator.js?v=20260917-1"></script>
   </head>
   <body class="strategy-site">
     <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -38,6 +38,9 @@
       <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
       <symbol id="icon-share" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 13v6h14v-6"></path></symbol>
       <symbol id="icon-bookmark" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4Z"></path></symbol>
+      <symbol id="icon-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></symbol>
+      <symbol id="icon-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V8h16v9h-3M7 14h10v7H7ZM16 11h1"></path></symbol>
+      <symbol id="icon-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1.6 7M4 4v6h6"></path></symbol>
       <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6M12 7h.01"></path></symbol>
       <symbol id="icon-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479s1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.9 6.986c-.002 5.45-4.437 9.884-9.888 9.884m8.413-18.297A11.815 11.815 0 0 0 12.055 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.69 1.448h.005c6.558 0 11.894-5.335 11.896-11.893a11.821 11.821 0 0 0-3.48-8.413Z"></path></symbol>
     </svg>
@@ -175,7 +178,11 @@
 
           <div class="strategy-summary" id="como-ler"><p class="strategy-kicker">EM LINGUAGEM SIMPLES</p><p id="strategy-summary-text"></p><p class="strategy-impact" id="strategy-impact" hidden></p></div>
           <div class="strategy-scenario-actions"><button class="button button-primary strategy-button strategy-button-primary" type="button" id="save-scenario"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-bookmark"></use></svg> Salvar cenário</button><button class="button button-outline strategy-button strategy-button-outline" type="button" id="share-simulation"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-share"></use></svg> Compartilhar simulação</button><button class="button button-outline strategy-button strategy-button-outline" type="button" data-open-calculation>Entender este cálculo</button><span class="strategy-action-feedback" id="strategy-action-feedback" role="status"></span></div>
-          <div class="strategy-secondary-actions"><button class="strategy-text-link" type="button" id="copy-resale-summary">Copiar resumo</button><button class="strategy-text-link" type="button" id="print-resale-simulation">Imprimir / Salvar</button><button class="strategy-text-link" type="button" id="reset-resale-simulation">Restaurar valores padrão</button></div>
+          <div class="strategy-secondary-actions">
+            <button class="button strategy-button strategy-button-outline" type="button" id="copy-resale-summary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-copy"></use></svg><span>Copiar resumo</span></button>
+            <button class="button strategy-button strategy-button-outline" type="button" id="print-resale-simulation"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-print"></use></svg><span>Imprimir / Salvar</span></button>
+            <button class="button strategy-button strategy-button-quiet strategy-button-reset" type="button" id="reset-resale-simulation"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-reset"></use></svg><span>Restaurar valores padrão</span></button>
+          </div>
         </div>
       </section>
 
@@ -238,7 +245,11 @@
           </div>
           <div class="strategy-summary" id="leverage-how-to-read"><p class="strategy-kicker">EM LINGUAGEM SIMPLES</p><p id="leverage-summary-text"></p></div>
           <div class="strategy-scenario-actions"><button class="button button-primary strategy-button strategy-button-primary" type="button" id="save-leverage-scenario"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-bookmark"></use></svg> Salvar cenário</button><button class="button button-outline strategy-button strategy-button-outline" type="button" id="share-leverage-simulation"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-share"></use></svg> Compartilhar simulação</button><button class="button button-outline strategy-button strategy-button-outline" type="button" data-open-leverage-calculation>Entender este cálculo</button><span class="strategy-action-feedback" id="leverage-action-feedback" role="status"></span></div>
-          <div class="strategy-secondary-actions"><button class="strategy-text-link" type="button" id="copy-leverage-summary">Copiar resumo</button><button class="strategy-text-link" type="button" id="print-leverage-simulation">Imprimir / Salvar</button><button class="strategy-text-link" type="button" id="reset-leverage-simulation">Restaurar valores padrão</button></div>
+          <div class="strategy-secondary-actions">
+            <button class="button strategy-button strategy-button-outline" type="button" id="copy-leverage-summary"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-copy"></use></svg><span>Copiar resumo</span></button>
+            <button class="button strategy-button strategy-button-outline" type="button" id="print-leverage-simulation"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-print"></use></svg><span>Imprimir / Salvar</span></button>
+            <button class="button strategy-button strategy-button-quiet strategy-button-reset" type="button" id="reset-leverage-simulation"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-reset"></use></svg><span>Restaurar valores padrão</span></button>
+          </div>
         </div>
       </section>
 

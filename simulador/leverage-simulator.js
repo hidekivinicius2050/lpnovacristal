@@ -246,12 +246,17 @@
   }
 
   function compactMoney(value) {
-    return new Intl.NumberFormat("pt-BR", {
-      notation: "compact",
-      style: "currency",
-      currency: "BRL",
-      maximumFractionDigits: 1
-    }).format(value);
+    const absoluteValue = Math.abs(value);
+    const sign = value < 0 ? "−" : "";
+    if (absoluteValue >= 1000000) {
+      const millions = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(absoluteValue / 1000000);
+      return `${sign}${millions} mi`;
+    }
+    if (absoluteValue >= 1000) {
+      const thousands = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(absoluteValue / 1000);
+      return `${sign}${thousands} mil`;
+    }
+    return `${sign}${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 }).format(absoluteValue)}`;
   }
 
   function setText(element, value) {
@@ -483,7 +488,10 @@
   function renderChart(result) {
     const timeline = result.timeline.monthly;
     if (!timeline.length) return;
-    const plot = { left: 66, right: 730, top: 32, bottom: 306 };
+    const canvasWidth = Math.max(220, dom.chart.clientWidth || 760);
+    const canvasHeight = Math.round(Math.min(400, Math.max(280, canvasWidth * 0.42)));
+    dom.chart.setAttribute("viewBox", `0 0 ${canvasWidth} ${canvasHeight}`);
+    const plot = { left: 66, right: canvasWidth - 12, top: 36, bottom: canvasHeight - 34 };
     const width = plot.right - plot.left;
     const height = plot.bottom - plot.top;
     const values = timeline.flatMap((point) => [point.netWorth, point.cashPurchaseValue, point.outstandingDebt]);
@@ -502,8 +510,8 @@
     dom.chartGrid.innerHTML = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
       const y = plot.bottom - height * ratio;
       const value = minValue + range * ratio;
-      return `<line class="strategy-chart-grid-line" x1="${plot.left}" x2="${plot.right}" y1="${y}" y2="${y}"></line><text class="strategy-chart-axis-label" x="${plot.left - 10}" y="${y + 4}" text-anchor="end">${compactMoney(value)}</text>`;
-    }).join("") + `<text class="strategy-chart-axis-label" x="${plot.left}" y="338">Hoje</text><text class="strategy-chart-axis-label" x="${plot.right}" y="338" text-anchor="end">${result.input.strategyYears} anos</text>`;
+      return `<line class="leverage-chart-grid-line" x1="${plot.left}" x2="${plot.right}" y1="${y}" y2="${y}"></line><text class="leverage-chart-axis-label" x="${plot.left - 10}" y="${y + 4}" text-anchor="end">${compactMoney(value)}</text>`;
+    }).join("") + `<text class="leverage-chart-axis-label" x="${plot.left}" y="${canvasHeight - 9}">Hoje</text><text class="leverage-chart-axis-label" x="${plot.right}" y="${canvasHeight - 9}" text-anchor="end">${result.input.strategyYears} anos</text>`;
     const lastTimelineMonth = timeline.length - 1;
     const markerWithinHorizon = result.input.scenarioMonth <= lastTimelineMonth;
     const markerMonth = Math.min(result.input.scenarioMonth, lastTimelineMonth);
@@ -513,10 +521,13 @@
     if (markerWithinHorizon) {
       dom.chartMarker.setAttribute("x1", markerX);
       dom.chartMarker.setAttribute("x2", markerX);
+      dom.chartMarker.setAttribute("y1", plot.top - 5);
+      dom.chartMarker.setAttribute("y2", plot.bottom);
+      dom.chartMarkerLabel.setAttribute("y", plot.top - 15);
       dom.chartMarkerLabel.setAttribute("x", Math.min(plot.right - 4, Math.max(plot.left + 4, markerX)));
       dom.chartMarkerLabel.setAttribute("text-anchor", markerX > (plot.left + plot.right) / 2 ? "end" : "start");
     }
-    chartGeometry = { timeline, plot, xFor, yFor };
+    chartGeometry = { timeline, plot, xFor, yFor, canvasWidth };
     showChartPoint(markerMonth, false);
     const markerDescription = markerWithinHorizon
       ? `A linha vertical marca o cenário de contemplação na ${result.input.scenarioMonth}ª assembleia.`
@@ -549,8 +560,6 @@
       line.textContent = text;
       dom.chartTooltip.append(line);
     });
-    dom.chartTooltip.style.left = `${Math.min(88, Math.max(12, x / 760 * 100))}%`;
-    dom.chartTooltip.style.top = `${Math.min(88, Math.max(8, y / 360 * 100))}%`;
     dom.chartTooltip.classList.toggle("is-visible", floating);
     dom.chartTooltip.setAttribute("aria-hidden", String(!floating));
   }
@@ -579,10 +588,24 @@
     result.sensitivity.forEach((item) => {
       const article = document.createElement("article");
       article.className = "leverage-sensitivity-item";
-      const heading = document.createElement("strong");
+      const heading = document.createElement("h4");
+      heading.className = "leverage-sensitivity-factor";
       heading.textContent = item.label;
-      const detail = document.createElement("span");
-      detail.textContent = `${formatSignedCurrency(item.projectedNetWorthImpact)} no patrimônio · ${formatSignedCurrency(item.monthlyNetNeedImpact)} na necessidade mensal · ${formatSignedCurrency(item.estimatedCreditImpact)} no crédito estimado`;
+      const detail = document.createElement("div");
+      detail.className = "leverage-sensitivity-impacts";
+      [
+        [item.projectedNetWorthImpact, "no patrimônio"],
+        [item.monthlyNetNeedImpact, "na necessidade mensal"],
+        [item.estimatedCreditImpact, "no crédito estimado"]
+      ].forEach(([impact, label]) => {
+        const metric = document.createElement("p");
+        const value = document.createElement("strong");
+        value.textContent = formatSignedCurrency(impact);
+        const caption = document.createElement("span");
+        caption.textContent = label;
+        metric.append(value, document.createTextNode(" "), caption);
+        detail.append(metric);
+      });
       article.append(heading, detail);
       dom.sensitivity.append(article);
     });
@@ -1016,7 +1039,7 @@
     const pointFromEvent = (event) => {
       if (!chartGeometry) return;
       const rectangle = dom.chart.getBoundingClientRect();
-      const localX = (event.clientX - rectangle.left) / Math.max(1, rectangle.width) * 760;
+      const localX = (event.clientX - rectangle.left) / Math.max(1, rectangle.width) * chartGeometry.canvasWidth;
       const ratio = (localX - chartGeometry.plot.left) / (chartGeometry.plot.right - chartGeometry.plot.left);
       showChartPoint(ratio * (chartGeometry.timeline.length - 1), true);
     };
@@ -1043,6 +1066,22 @@
       dom.chartPoint.dataset.month = String(Math.min(Math.max(next, 0), chartGeometry.timeline.length - 1));
       showChartPoint(Number(dom.chartPoint.dataset.month), true);
     });
+    let chartWidth = 0;
+    let resizeFrame = 0;
+    const redrawChart = (nextWidth) => {
+      if (!nextWidth || nextWidth === chartWidth) return;
+      chartWidth = nextWidth;
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(() => {
+        if (currentResult) renderChart(currentResult);
+      });
+    };
+    if (typeof ResizeObserver === "function") {
+      const observer = new ResizeObserver(([entry]) => redrawChart(Math.round(entry.contentRect.width)));
+      observer.observe(dom.chart);
+    } else {
+      window.addEventListener("resize", () => redrawChart(Math.round(dom.chart.clientWidth)), { passive: true });
+    }
   }
 
   function markStarted() {
