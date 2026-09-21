@@ -37,12 +37,33 @@
   const PLAN_TERMS = Object.freeze([120, 150, 180, 200, 240]);
   const STRATEGY_QUERY_KEY = "estrategia";
   const MODE_QUERY_KEY = "modo";
+  const MODE_VALUES = Object.freeze({
+    guided: "guided",
+    guiado: "guided",
+    simple: "simple",
+    simples: "simple",
+    advanced: "advanced",
+    avancado: "advanced",
+    "avançado": "advanced"
+  });
+  const MODE_QUERY_VALUES = Object.freeze({
+    guided: "guiado",
+    simple: "simples",
+    advanced: "avancado"
+  });
+  const MODE_LABELS = Object.freeze({
+    guided: "guiado",
+    simple: "preenchimento rápido",
+    advanced: "análise completa"
+  });
 
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
   const dom = {
     form: $("#strategy-form"),
     modeButtons: $$("[data-resale-mode]"),
+    guidedPanel: $("#resale-guided"),
+    standardLayout: $("#resale-standard-layout") || $(".strategy-layout", $("#configurar")),
     advancedFields: $("#strategy-advanced-fields"),
     credit: $("#strategy-credit"),
     ownBid: $("#strategy-own-bid"),
@@ -73,6 +94,8 @@
     generatedAt: $("#resale-generated-at"),
     shareButtons: [$("#share-simulation"), $("#share-simulation-bottom")].filter(Boolean),
     whatsapp: $("#strategy-whatsapp"),
+    quickWhatsapp: $("#strategy-whatsapp-quick"),
+    guidedWhatsapp: $("#strategy-whatsapp-guided"),
     dialog: $("#calculation-dialog"),
     breakdown: $("#calculation-breakdown"),
     calculationTitle: $("#calculation-title"),
@@ -119,7 +142,13 @@
       appliedBid: $("#result-applied-bid"),
       balanceAfterBid: $("#result-balance-after-bid"),
       postInstallment: $("#result-post-installment"),
-      remainingMonths: $("#result-remaining-months")
+      remainingMonths: $("#result-remaining-months"),
+      quickProfit: $("#resale-quick-profit"),
+      quickCapital: $("#resale-quick-capital"),
+      quickOperation: $("#resale-quick-operation"),
+      quickInstallment: $("#resale-quick-installment"),
+      quickRoi: $("#resale-quick-roi"),
+      quickEmbedded: $("#resale-quick-embedded")
     }
   };
 
@@ -138,8 +167,21 @@
   const initialStrategyValue = initialParams.get(STRATEGY_QUERY_KEY);
   const startsInLeverage = initialStrategyValue === "alavancagem" || initialStrategyValue === "leverage";
   let currentMode = startsInLeverage
-    ? "simple"
-    : (initialParams.get(MODE_QUERY_KEY) === "avancado" ? "advanced" : "simple");
+    ? "guided"
+    : parseMode(initialParams.get(MODE_QUERY_KEY));
+
+  function parseMode(value, fallback = "guided") {
+    if (typeof value !== "string") return fallback;
+    return MODE_VALUES[value.trim().toLowerCase()] || fallback;
+  }
+
+  function serializeMode(mode = currentMode) {
+    return MODE_QUERY_VALUES[parseMode(mode)] || MODE_QUERY_VALUES.guided;
+  }
+
+  function modeLabel(mode = currentMode) {
+    return MODE_LABELS[parseMode(mode)] || MODE_LABELS.guided;
+  }
 
   function readInputFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -171,7 +213,7 @@
     const url = new URL(window.location.href);
     const params = new URLSearchParams();
     params.set(STRATEGY_QUERY_KEY, "revenda");
-    params.set(MODE_QUERY_KEY, currentMode === "advanced" ? "avancado" : "simples");
+    params.set(MODE_QUERY_KEY, serializeMode());
     Object.entries(URL_KEYS).forEach(([key, queryKey]) => {
       let value = input[key];
       if (key === "installmentType") value = value === "full" ? "integral" : "reduzida";
@@ -249,7 +291,7 @@
       [dom.otherOutlays, "outros desembolsos"]
     ];
     if (dom.installmentType.value === "reduced") fields.push([dom.reducedPercentage, "percentual da parcela reduzida"]);
-    return fields.find(([field]) => field.value.trim() === "");
+    return fields.find(([field]) => field.offsetParent !== null && field.value.trim() === "");
   }
 
   function syncForm(input, force = false) {
@@ -343,6 +385,12 @@
     setText(dom.outputs.balanceAfterBid, formatCurrency(result.debt.balanceAfterBid));
     setText(dom.outputs.postInstallment, formatCurrency(result.postContemplationInstallment));
     setText(dom.outputs.remainingMonths, `${result.remainingMonths} meses`);
+    setResultCurrency(dom.outputs.quickProfit, result.grossProfit);
+    setResultCurrency(dom.outputs.quickCapital, result.investedCapital);
+    setResultCurrency(dom.outputs.quickOperation, result.estimatedOperationValue);
+    setResultCurrency(dom.outputs.quickInstallment, result.initialInstallment);
+    setText(dom.outputs.quickRoi, result.roi === null ? "—" : formatPercentage(result.roi));
+    setText(dom.outputs.quickEmbedded, formatPercentage(result.input.embeddedBidPercentage));
     setText(dom.scenarioLabel, `Contemplação considerada na ${result.input.scenarioMonth}ª assembleia`);
     if (dom.generatedAt) dom.generatedAt.textContent = `Simulação gerada em ${new Intl.DateTimeFormat("pt-BR").format(new Date())}`;
 
@@ -450,7 +498,8 @@
   }
 
   function updateWhatsapp(result) {
-    dom.whatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsappMessage(result))}`;
+    const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsappMessage(result))}`;
+    [dom.whatsapp, dom.quickWhatsapp, dom.guidedWhatsapp].filter(Boolean).forEach((link) => { link.href = href; });
   }
 
   function calculate(changedKey = "", options = {}) {
@@ -474,6 +523,14 @@
     renderImpact(before, next, changedKey);
     if (options.updateUrl) scheduleUrlUpdate();
     whatsappAvoidanceUpdate?.();
+    window.dispatchEvent(new CustomEvent("cristal:resale-updated", {
+      detail: {
+        result: currentResult,
+        input: { ...currentResult.input },
+        mode: currentMode,
+        changedKey
+      }
+    }));
   }
 
   function scheduleCalculation(changedKey, options = {}) {
@@ -596,7 +653,7 @@
     const url = buildScenarioUrl(currentResult.input);
     const shareData = {
       title: "Meu cenário de revenda no simulador da Cristal",
-      text: `Estratégia de revenda · modo ${currentMode === "advanced" ? "avançado" : "simples"} · carta de ${formatCurrency(currentResult.input.credit)} e cenário na ${currentResult.input.scenarioMonth}ª assembleia.`,
+      text: `Estratégia de revenda · modo ${modeLabel()} · carta de ${formatCurrency(currentResult.input.credit)} e cenário na ${currentResult.input.scenarioMonth}ª assembleia.`,
       url
     };
     try {
@@ -658,8 +715,7 @@
   }
 
   function resetResaleSimulation() {
-    currentMode = "simple";
-    setResaleMode(currentMode, false);
+    setResaleMode("guided", false);
     calculate("", { input: DEFAULT_UI_INPUT, forceSync: true, updateUrl: true });
     showActionFeedback("Valores padrão restaurados.");
   }
@@ -768,14 +824,26 @@
   }
 
   function setResaleMode(mode, scroll = false) {
-    currentMode = mode === "advanced" ? "advanced" : "simple";
+    const previousMode = currentMode;
+    currentMode = parseMode(mode);
+    document.body.dataset.resaleMode = currentMode;
     dom.modeButtons.forEach((item) => {
       const active = item.dataset.resaleMode === currentMode;
       item.classList.toggle("is-active", active);
       item.setAttribute("aria-pressed", String(active));
     });
+    if (dom.guidedPanel) dom.guidedPanel.hidden = currentMode !== "guided";
+    if (dom.standardLayout) dom.standardLayout.hidden = currentMode === "guided";
     dom.advancedFields.hidden = currentMode !== "advanced";
-    if (scroll && currentMode === "advanced") dom.advancedFields.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (scroll) {
+      const destination = currentMode === "guided"
+        ? dom.guidedPanel
+        : (currentMode === "advanced" ? dom.advancedFields : dom.standardLayout);
+      destination?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    window.dispatchEvent(new CustomEvent("cristal:resale-mode-changed", {
+      detail: { mode: currentMode, previousMode }
+    }));
   }
 
   function setupModeToggle() {
@@ -784,6 +852,12 @@
       setResaleMode(button.dataset.resaleMode, true);
       scheduleUrlUpdate();
       trackEvent("simulator_parameter_changed", { parameter: "mode", mode: currentMode, strategy: "resale" });
+    }));
+    $$('[data-open-resale-advanced]').forEach((button) => button.addEventListener("click", () => {
+      setResaleMode("advanced", false);
+      scheduleUrlUpdate();
+      $("#resultados")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      trackEvent("simulator_parameter_changed", { parameter: "mode", mode: currentMode, strategy: "resale", source: "quick_summary" });
     }));
   }
 
@@ -841,6 +915,33 @@
     parameterChanged(changedKey);
   }
 
+  function updateInput(partial, changedKey = "") {
+    if (!partial || typeof partial !== "object" || Array.isArray(partial)) return currentResult;
+    const allowedKeys = new Set(Object.keys(DEFAULT_UI_INPUT));
+    const safePartial = Object.fromEntries(
+      Object.entries(partial).filter(([key]) => allowedKeys.has(key))
+    );
+    const keys = Object.keys(safePartial);
+    if (!keys.length) return currentResult;
+    applyPartialInput(safePartial, changedKey || keys[0]);
+    return currentResult;
+  }
+
+  function setModeFromApi(mode, options = {}) {
+    const nextMode = parseMode(mode);
+    setResaleMode(nextMode, Boolean(options.scroll));
+    if (options.updateUrl !== false) scheduleUrlUpdate();
+    if (options.track !== false) {
+      trackEvent("simulator_parameter_changed", {
+        parameter: "mode",
+        mode: currentMode,
+        strategy: "resale",
+        source: options.source || "api"
+      });
+    }
+    return currentMode;
+  }
+
   function setupDialog() {
     $$('[data-open-calculation]').forEach((button) => button.addEventListener("click", () => {
       if (currentResult) updateCalculationBreakdown(currentResult);
@@ -867,11 +968,11 @@
     dom.copySummary?.addEventListener("click", copyResaleSummary);
     dom.printSimulation?.addEventListener("click", printResaleSimulation);
     dom.resetSimulation?.addEventListener("click", resetResaleSimulation);
-    dom.whatsapp.addEventListener("click", () => trackEvent("simulator_whatsapp_clicked", {
+    [dom.whatsapp, dom.quickWhatsapp, dom.guidedWhatsapp].filter(Boolean).forEach((link) => link.addEventListener("click", () => trackEvent("simulator_whatsapp_clicked", {
       scenario_month: currentResult.input.scenarioMonth,
       embedded_bid_percentage: currentResult.input.embeddedBidPercentage,
       credit_band: creditBand(currentResult.input.credit)
-    }));
+    })));
   }
 
   function creditBand(value) {
@@ -939,6 +1040,8 @@
       getCurrentResult: () => currentResult,
       getCurrentMode: () => currentMode,
       buildScenarioUrl,
+      updateInput,
+      setMode: setModeFromApi,
       refresh() {
         if (currentResult) renderResults(currentResult);
       },

@@ -10,6 +10,11 @@
   const WHATSAPP_NUMBER = "556133283000";
   const STRATEGY_QUERY_KEY = "estrategia";
   const MODE_QUERY_KEY = "modo";
+  const MODE_URL_VALUES = Object.freeze({
+    guided: "guiado",
+    simple: "simples",
+    advanced: "avancado"
+  });
   const URL_KEYS = Object.freeze({
     capitalAvailable: "capital",
     monthlyCapacity: "capacidade",
@@ -29,6 +34,14 @@
   });
   const TERM_OPTIONS = Object.freeze([120, 150, 180, 200, 240]);
   const HORIZON_OPTIONS = Object.freeze([5, 10, 15, 20]);
+  const DEFAULT_ACQUISITION_CONTEXT = Object.freeze({
+    assetType: "property",
+    targetAssetValue: 400000
+  });
+  const ACQUISITION_URL_KEYS = Object.freeze({
+    assetType: "tipo",
+    targetAssetValue: "bem"
+  });
   const $ = (selector, parent = document) => parent.querySelector(selector);
   const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
 
@@ -38,7 +51,20 @@
     resultsGuideLink: $("#strategy-results-guide"),
     form: $("#leverage-form"),
     modeButtons: $$('[data-leverage-mode]'),
+    guidedPanel: $("#leverage-guided"),
+    standardLayout: $("#leverage-standard-layout"),
     advancedFields: $("#leverage-advanced-fields"),
+    assetTypeButtons: $$('[data-asset-type]'),
+    targetValue: $("#leverage-target-value"),
+    targetLabel: $("#leverage-target-label"),
+    summaryTargetLabel: $("#leverage-summary-target-label"),
+    summaryTarget: $("#leverage-summary-target"),
+    targetStatus: $("#leverage-target-status"),
+    targetMessage: $("#leverage-target-message"),
+    targetProgress: $("#leverage-target-progress"),
+    vehicleNote: $("#leverage-vehicle-note"),
+    resultsKicker: $("#leverage-results-kicker"),
+    resultTitle: $("#leverage-results-title"),
     capital: $("#leverage-capital"),
     monthlyCapacity: $("#leverage-monthly-capacity"),
     totalBid: $("#leverage-total-bid"),
@@ -73,6 +99,10 @@
     printSimulation: $("#print-leverage-simulation"),
     resetSimulation: $("#reset-leverage-simulation"),
     whatsapp: $("#leverage-whatsapp"),
+    quickWhatsapp: $("#leverage-whatsapp-quick"),
+    guidedWhatsapp: $("#leverage-whatsapp-guided"),
+    quickTotalBid: $("#leverage-quick-total-bid"),
+    quickEmbeddedBid: $("#leverage-quick-embedded-bid"),
     timelineMonth: $("#leverage-timeline-month"),
     stressToggle: $("#toggle-leverage-stress"),
     stressContent: $("#leverage-stress-content"),
@@ -156,6 +186,7 @@
   let activeStrategy = readInitialStrategy();
   let currentMode = readInitialMode();
   let currentInput = { ...engine.DEFAULT_INPUT, ...readInputFromUrl() };
+  let acquisitionContext = readAcquisitionContextFromUrl();
   let currentResult = null;
   let savedScenarios = [];
   let calculationFrame = 0;
@@ -170,11 +201,37 @@
     return value === "alavancagem" || value === "leverage" ? "leverage" : "resale";
   }
 
+  function normalizeMode(mode) {
+    const value = String(mode || "").trim().toLowerCase();
+    if (value === "advanced" || value === "avancado" || value === "avançado") return "advanced";
+    if (value === "simple" || value === "simples") return "simple";
+    return "guided";
+  }
+
+  function modeLabel(mode = currentMode) {
+    return {
+      guided: "guiado",
+      simple: "simples",
+      advanced: "avançado"
+    }[normalizeMode(mode)];
+  }
+
   function readInitialMode() {
-    if (readInitialStrategy() !== "leverage") return "simple";
-    return new URLSearchParams(window.location.search).get(MODE_QUERY_KEY) === "avancado"
-      ? "advanced"
-      : "simple";
+    if (readInitialStrategy() !== "leverage") return "guided";
+    return normalizeMode(new URLSearchParams(window.location.search).get(MODE_QUERY_KEY));
+  }
+
+  function readAcquisitionContextFromUrl() {
+    if (readInitialStrategy() !== "leverage") return { ...DEFAULT_ACQUISITION_CONTEXT };
+    const params = new URLSearchParams(window.location.search);
+    const rawType = (params.get(ACQUISITION_URL_KEYS.assetType) || "").toLowerCase();
+    const targetValue = engine.parseNumeric(params.get(ACQUISITION_URL_KEYS.targetAssetValue) || "");
+    return {
+      assetType: rawType === "veiculo" || rawType === "vehicle" ? "vehicle" : "property",
+      targetAssetValue: Number.isFinite(targetValue) && targetValue > 0
+        ? targetValue
+        : DEFAULT_ACQUISITION_CONTEXT.targetAssetValue
+    };
   }
 
   function readInputFromUrl() {
@@ -202,12 +259,14 @@
     const url = new URL(window.location.href);
     const params = new URLSearchParams();
     params.set(STRATEGY_QUERY_KEY, "alavancagem");
-    params.set(MODE_QUERY_KEY, currentMode === "advanced" ? "avancado" : "simples");
+    params.set(MODE_QUERY_KEY, MODE_URL_VALUES[currentMode] || MODE_URL_VALUES.guided);
     Object.entries(URL_KEYS).forEach(([key, queryKey]) => {
       let value = input[key];
       if (key === "installmentType") value = value === "full" ? "integral" : "reduzida";
       if (value !== undefined && value !== null && value !== "") params.set(queryKey, String(value));
     });
+    params.set(ACQUISITION_URL_KEYS.assetType, acquisitionContext.assetType === "vehicle" ? "veiculo" : "imovel");
+    params.set(ACQUISITION_URL_KEYS.targetAssetValue, String(acquisitionContext.targetAssetValue));
     url.search = params.toString();
     url.hash = "";
     return url.toString();
@@ -324,7 +383,7 @@
     if (dom.installmentType.value === "reduced") {
       fields.push([dom.reducedPercentage, "percentual da parcela reduzida"]);
     }
-    return fields.find(([field]) => field && field.value.trim() === "");
+    return fields.find(([field]) => field && field.offsetParent !== null && field.value.trim() === "");
   }
 
   function updatePressedPresets(input) {
@@ -339,6 +398,10 @@
     $$('[data-leverage-month]').forEach((button) => update(
       button,
       Number(button.dataset.leverageMonth) === input.scenarioMonth
+    ));
+    $$('[data-target-value]').forEach((button) => update(
+      button,
+      Number(button.dataset.targetValue) === acquisitionContext.targetAssetValue
     ));
   }
 
@@ -375,6 +438,87 @@
     dom.embeddedBid.style.setProperty("--range-progress", `${input.embeddedBidPercentage / embeddedMax * 100}%`);
     dom.month.style.setProperty("--range-progress", `${(input.scenarioMonth - 1) / Math.max(1, input.termMonths - 1) * 100}%`);
     updatePressedPresets(input);
+  }
+
+  function assetLabel(type = acquisitionContext.assetType) {
+    return type === "vehicle" ? "veículo" : "imóvel";
+  }
+
+  function renderAcquisitionContext(result) {
+    const isVehicle = acquisitionContext.assetType === "vehicle";
+    const noun = assetLabel();
+    document.body.dataset.acquisitionType = acquisitionContext.assetType;
+    dom.assetTypeButtons.forEach((button) => {
+      const active = button.dataset.assetType === acquisitionContext.assetType;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    setText(dom.targetLabel, `Valor do ${noun} desejado`);
+    setText(dom.summaryTargetLabel, `Valor do ${noun}`);
+    setMoneyInput(dom.targetValue, acquisitionContext.targetAssetValue);
+    setResultCurrency(dom.summaryTarget, acquisitionContext.targetAssetValue);
+    setText(dom.quickTotalBid, formatPercentage(result.input.totalBidPercentage, 1));
+    setText(dom.quickEmbeddedBid, formatPercentage(result.input.embeddedBidPercentage, 1));
+    if (dom.vehicleNote) dom.vehicleNote.hidden = !isVehicle;
+    setText(dom.resultsKicker, isVehicle ? "RESULTADOS DO CENÁRIO" : "RESULTADO PATRIMONIAL");
+    setText(dom.resultTitle, isVehicle
+      ? "Crédito, lance e parcelas no mesmo cenário."
+      : "Crédito, fluxo mensal e patrimônio no mesmo cenário.");
+
+    const availableCredit = result.credit.netAtContemplation;
+    const difference = availableCredit - acquisitionContext.targetAssetValue;
+    const tolerance = 0.005;
+    dom.targetStatus?.classList.toggle("is-covered", difference >= -tolerance);
+    dom.targetStatus?.classList.toggle("is-gap", difference < -tolerance);
+    if (Math.abs(difference) < tolerance) {
+      setText(dom.targetMessage, `O crédito líquido estimado coincide com o valor informado para o ${noun}.`);
+    } else if (difference > 0) {
+      setText(dom.targetMessage, `O crédito líquido estimado supera o valor informado em ${formatCurrency(difference)}.`);
+    } else {
+      setText(dom.targetMessage, `O crédito líquido estimado fica ${formatCurrency(Math.abs(difference))} abaixo do valor informado.`);
+    }
+    const progress = acquisitionContext.targetAssetValue > 0
+      ? Math.min(100, Math.max(0, availableCredit / acquisitionContext.targetAssetValue * 100))
+      : 0;
+    if (dom.targetProgress) dom.targetProgress.style.width = `${progress}%`;
+    updatePressedPresets(result.input);
+  }
+
+  function dispatchSimulatorUpdate(changedKey = "") {
+    window.dispatchEvent(new CustomEvent("cristal:leverage-updated", {
+      detail: {
+        strategy: "leverage",
+        mode: currentMode,
+        changedKey,
+        input: { ...(currentResult?.input || currentInput) },
+        acquisitionContext: { ...acquisitionContext },
+        result: currentResult
+      }
+    }));
+  }
+
+  function updateAcquisitionContext(partial = {}, changedKey = "acquisitionContext") {
+    const next = { ...acquisitionContext };
+    if (Object.prototype.hasOwnProperty.call(partial, "assetType")) {
+      next.assetType = partial.assetType === "vehicle" || partial.assetType === "veiculo"
+        ? "vehicle"
+        : "property";
+    }
+    if (Object.prototype.hasOwnProperty.call(partial, "targetAssetValue")) {
+      const targetAssetValue = engine.parseNumeric(partial.targetAssetValue);
+      if (Number.isFinite(targetAssetValue) && targetAssetValue > 0) {
+        next.targetAssetValue = targetAssetValue;
+      }
+    }
+    acquisitionContext = next;
+    if (currentResult) {
+      renderAcquisitionContext(currentResult);
+      updateWhatsapp(currentResult);
+    }
+    scheduleUrlUpdate();
+    parameterChanged(changedKey);
+    dispatchSimulatorUpdate(changedKey);
+    return { ...acquisitionContext };
   }
 
   function limitingFactorLabel(factor) {
@@ -451,7 +595,10 @@
     setText(dom.generatedAt, `Simulação gerada em ${date}`);
     setText(dom.scenarioLabel, `Contemplação considerada na ${result.input.scenarioMonth}ª assembleia`);
     setText(dom.timelineMonth, `${result.input.scenarioMonth}ª assembleia`);
-    setText(dom.summaryText, `Com ${formatCurrency(result.input.capitalAvailable)} disponíveis e capacidade mensal de ${formatCurrency(result.input.monthlyCapacity)}, este cenário considera um crédito de aproximadamente ${formatCurrency(result.estimatedCredit)}. O lance total seria de ${formatCurrency(result.bid.total)}, sendo ${formatCurrency(result.bid.own)} em dinheiro próprio e ${formatCurrency(result.bid.embedded)} de lance embutido. No horizonte de ${result.input.strategyYears} anos, o patrimônio líquido matematicamente projetado é ${formatCurrency(result.patrimony.netWorth)}. A contemplação, a valorização e a renda de aluguel são premissas da simulação, não garantias.`);
+    renderAcquisitionContext(result);
+    setText(dom.summaryText, acquisitionContext.assetType === "vehicle"
+      ? `Com ${formatCurrency(result.input.capitalAvailable)} disponíveis e capacidade mensal de ${formatCurrency(result.input.monthlyCapacity)}, este cenário suporta aproximadamente ${formatCurrency(result.estimatedCredit)} de crédito contratado e ${formatCurrency(result.credit.netAtContemplation)} de crédito líquido estimado. O lance próprio calculado é ${formatCurrency(result.bid.own)} e a maior parcela bruta projetada é ${formatCurrency(result.capacity.monthlyRequirement)}. A contemplação é apenas uma hipótese da simulação.`
+      : `Com ${formatCurrency(result.input.capitalAvailable)} disponíveis e capacidade mensal de ${formatCurrency(result.input.monthlyCapacity)}, este cenário considera um crédito de aproximadamente ${formatCurrency(result.estimatedCredit)}. O lance total seria de ${formatCurrency(result.bid.total)}, sendo ${formatCurrency(result.bid.own)} em dinheiro próprio e ${formatCurrency(result.bid.embedded)} de lance embutido. No horizonte de ${result.input.strategyYears} anos, o patrimônio líquido matematicamente projetado é ${formatCurrency(result.patrimony.netWorth)}. A contemplação, a valorização e a renda de aluguel são premissas da simulação, não garantias.`);
 
     dom.formFeedback.hidden = true;
     dom.formFeedback.textContent = "";
@@ -613,7 +760,10 @@
 
   function updateCalculationBreakdown(result) {
     dom.calculationBreakdown.replaceChildren();
-    result.breakdown.forEach((item) => {
+    const breakdown = acquisitionContext.assetType === "vehicle"
+      ? result.breakdown.filter((item) => !["rent", "monthly-need", "net-worth"].includes(item.key))
+      : result.breakdown;
+    breakdown.forEach((item) => {
       const row = document.createElement("div");
       row.className = "strategy-calculation-row";
       const term = document.createElement("dt");
@@ -627,9 +777,15 @@
       row.append(term, detail);
       dom.calculationBreakdown.append(row);
     });
-    dom.calculationTitle.textContent = "Como a alavancagem foi calculada";
-    dom.calculationIntro.textContent = "Confira o dimensionamento do crédito, taxas, parcelas, lance, aluguel, saldo e patrimônio em etapas auditáveis.";
-    dom.calculationNote.textContent = result.assumptions.join(" ");
+    dom.calculationTitle.textContent = acquisitionContext.assetType === "vehicle"
+      ? "Como a aquisição foi calculada"
+      : "Como a alavancagem foi calculada";
+    dom.calculationIntro.textContent = acquisitionContext.assetType === "vehicle"
+      ? "Confira o dimensionamento do crédito, taxas, parcelas, lance e saldo em etapas auditáveis."
+      : "Confira o dimensionamento do crédito, taxas, parcelas, lance, aluguel, saldo e patrimônio em etapas auditáveis.";
+    dom.calculationNote.textContent = acquisitionContext.assetType === "vehicle"
+      ? "Para veículos, esta memória não utiliza projeções de aluguel, valorização ou patrimônio. Confirme as regras específicas com a administradora."
+      : result.assumptions.join(" ");
   }
 
   function calculate(changedKey = "", options = {}) {
@@ -649,6 +805,8 @@
     syncForm(next.input, Boolean(options.forceSync));
     renderResults(next);
     if (options.updateUrl) scheduleUrlUpdate();
+    dispatchSimulatorUpdate(changedKey);
+    return currentResult;
   }
 
   function scheduleCalculation(changedKey, options = {}) {
@@ -659,7 +817,7 @@
     });
   }
 
-  function applyPartialInput(partial, changedKey) {
+  function updateInput(partial = {}, changedKey = "guidedInput") {
     markStarted();
     calculate(changedKey, {
       input: { ...(currentResult?.input || currentInput), ...partial },
@@ -667,19 +825,38 @@
       updateUrl: true
     });
     parameterChanged(changedKey);
+    return currentResult;
+  }
+
+  function applyPartialInput(partial, changedKey) {
+    return updateInput(partial, changedKey);
   }
 
   function setMode(mode, scroll = false) {
-    currentMode = mode === "advanced" ? "advanced" : "simple";
+    const previousMode = currentMode;
+    currentMode = normalizeMode(mode);
+    document.body.dataset.leverageMode = currentMode;
     dom.modeButtons.forEach((button) => {
       const active = button.dataset.leverageMode === currentMode;
       button.classList.toggle("is-active", active);
       button.setAttribute("aria-pressed", String(active));
     });
-    dom.advancedFields.hidden = currentMode !== "advanced";
-    if (scroll && currentMode === "advanced") {
-      dom.advancedFields.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (dom.guidedPanel) dom.guidedPanel.hidden = currentMode !== "guided";
+    if (dom.standardLayout) dom.standardLayout.hidden = currentMode === "guided";
+    if (dom.advancedFields) dom.advancedFields.hidden = currentMode !== "advanced";
+    if (scroll) {
+      const destination = currentMode === "guided"
+        ? dom.guidedPanel
+        : (currentMode === "advanced" ? dom.advancedFields : dom.standardLayout);
+      destination?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
+    scheduleUrlUpdate();
+    if (previousMode !== currentMode) {
+      window.dispatchEvent(new CustomEvent("cristal:leverage-mode-changed", {
+        detail: { strategy: "leverage", mode: currentMode, previousMode }
+      }));
+    }
+    return currentMode;
   }
 
   function panelShouldBeHidden(panel, strategy) {
@@ -735,6 +912,36 @@
 
   function setupInputs() {
     dom.form.addEventListener("submit", (event) => event.preventDefault());
+    dom.assetTypeButtons.forEach((button) => button.addEventListener("click", () => {
+      const assetType = button.dataset.assetType === "vehicle" ? "vehicle" : "property";
+      updateAcquisitionContext({ assetType }, "assetType");
+    }));
+    dom.targetValue.addEventListener("input", () => {
+      markStarted();
+      const value = engine.parseNumeric(dom.targetValue.value);
+      if (!Number.isFinite(value) || value <= 0) {
+        setText(dom.summaryTarget, "—");
+        setText(dom.targetMessage, "Preencha o valor do bem para comparar com o crédito líquido estimado.");
+        if (dom.targetProgress) dom.targetProgress.style.width = "0%";
+        return;
+      }
+      acquisitionContext = { ...acquisitionContext, targetAssetValue: value };
+      if (currentResult) renderAcquisitionContext(currentResult);
+      scheduleUrlUpdate();
+    });
+    dom.targetValue.addEventListener("blur", () => {
+      const value = engine.parseNumeric(dom.targetValue.value);
+      const targetAssetValue = Number.isFinite(value) && value > 0
+        ? value
+        : acquisitionContext.targetAssetValue;
+      setMoneyInput(dom.targetValue, targetAssetValue, true);
+      updateAcquisitionContext({ targetAssetValue }, "targetAssetValue");
+    });
+    $$('[data-target-value]').forEach((button) => button.addEventListener("click", () => {
+      const targetAssetValue = Number(button.dataset.targetValue);
+      setMoneyInput(dom.targetValue, targetAssetValue, true);
+      updateAcquisitionContext({ targetAssetValue }, "targetAssetValue");
+    }));
     [dom.capital, dom.monthlyCapacity, dom.otherOutlays].forEach((input) => {
       input.addEventListener("input", () => {
         markStarted();
@@ -803,6 +1010,12 @@
       setMode(button.dataset.leverageMode, true);
       scheduleUrlUpdate();
       trackEvent("simulator_parameter_changed", { parameter: "mode", mode: currentMode });
+    }));
+    $$('[data-open-leverage-advanced]').forEach((button) => button.addEventListener("click", () => {
+      setMode("advanced", false);
+      scheduleUrlUpdate();
+      $("#leverage-results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      trackEvent("simulator_parameter_changed", { parameter: "mode", mode: currentMode, source: "quick_summary" });
     }));
   }
 
@@ -883,11 +1096,12 @@
   }
 
   function buildSummary(result) {
-    return [
-      "Estratégia: alavancagem patrimonial",
+    const lines = [
+      `Objetivo: adquirir ${acquisitionContext.assetType === "vehicle" ? "veículo" : "imóvel"}`,
       `Simulação gerada em: ${new Intl.DateTimeFormat("pt-BR").format(new Date())}`,
-      `Modo: ${currentMode === "advanced" ? "avançado" : "simples"}`,
+      `Modo: ${modeLabel()}`,
       "",
+      `Valor do bem informado: ${formatCurrency(acquisitionContext.targetAssetValue)}`,
       `Capital disponível: ${formatCurrency(result.input.capitalAvailable)}`,
       `Capacidade mensal: ${formatCurrency(result.input.monthlyCapacity)}`,
       `Crédito estimado: ${formatCurrency(result.estimatedCredit)}`,
@@ -899,21 +1113,28 @@
       `Parcela inicial: ${formatCurrency(result.installments.initial)}`,
       `Parcela atual pré-contemplação: ${formatCurrency(result.installments.atContemplation)}`,
       `Parcela pós-contemplação estimada: ${formatCurrency(result.installments.afterContemplation)}`,
-      `Aluguel mensal estimado: ${formatCurrency(result.rental.monthlyAtContemplation)}`,
-      `Cobertura estimada: ${formatPercentage(result.rental.coveragePercentage)}`,
-      `Necessidade líquida mensal: ${formatCurrency(result.effort.netMonthlyNeed)}`,
-      `Saldo devedor no horizonte: ${formatCurrency(result.patrimony.outstandingDebt)}`,
-      `Patrimônio líquido projetado: ${formatCurrency(result.patrimony.netWorth)}`,
-      `Horizonte: ${result.input.strategyYears} anos`,
-      "",
-      "Simulação informativa, baseada nas premissas selecionadas; não constitui garantia de contemplação, valorização ou renda."
-    ].join("\n");
+      `Maior parcela bruta projetada: ${formatCurrency(result.capacity.monthlyRequirement)}`
+    ];
+    if (acquisitionContext.assetType === "property") {
+      lines.push(
+        `Aluguel mensal estimado: ${formatCurrency(result.rental.monthlyAtContemplation)}`,
+        `Cobertura estimada: ${formatPercentage(result.rental.coveragePercentage)}`,
+        `Necessidade líquida mensal: ${formatCurrency(result.effort.netMonthlyNeed)}`,
+        `Saldo devedor no horizonte: ${formatCurrency(result.patrimony.outstandingDebt)}`,
+        `Patrimônio líquido projetado: ${formatCurrency(result.patrimony.netWorth)}`,
+        `Horizonte: ${result.input.strategyYears} anos`
+      );
+    }
+    lines.push("", "Simulação informativa, baseada nas premissas selecionadas; não constitui garantia de contemplação, valorização ou renda.");
+    return lines.join("\n");
   }
 
   function buildWhatsappMessage(result) {
-    return [
-      "Olá! Fiz uma simulação de alavancagem no site.",
+    const lines = [
+      "Olá! Fiz uma simulação de aquisição no site da Cristal.",
       "",
+      `Objetivo: ${acquisitionContext.assetType === "vehicle" ? "Veículo" : "Imóvel"}`,
+      `Valor do bem: ${formatCurrency(acquisitionContext.targetAssetValue)}`,
       `Capital disponível: ${formatCurrency(result.input.capitalAvailable)}`,
       `Capacidade mensal: ${formatCurrency(result.input.monthlyCapacity)}`,
       `Crédito estimado: ${formatCurrency(result.estimatedCredit)}`,
@@ -923,15 +1144,21 @@
       `Crédito líquido: ${formatCurrency(result.credit.netAtContemplation)}`,
       `Cenário de contemplação: ${result.input.scenarioMonth} meses`,
       `Parcela estimada pós-contemplação: ${formatCurrency(result.installments.afterContemplation)}`,
-      `Aluguel estimado: ${formatCurrency(result.rental.monthlyAtContemplation)}`,
-      `Patrimônio projetado: ${formatCurrency(result.patrimony.netWorth)}`,
-      "",
-      "Gostaria de analisar esse cenário."
-    ].join("\n");
+      `Maior parcela bruta projetada: ${formatCurrency(result.capacity.monthlyRequirement)}`
+    ];
+    if (acquisitionContext.assetType === "property") {
+      lines.push(
+        `Aluguel estimado: ${formatCurrency(result.rental.monthlyAtContemplation)}`,
+        `Patrimônio projetado: ${formatCurrency(result.patrimony.netWorth)}`
+      );
+    }
+    lines.push("", "Gostaria de analisar esse cenário.");
+    return lines.join("\n");
   }
 
   function updateWhatsapp(result) {
-    dom.whatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsappMessage(result))}`;
+    const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsappMessage(result))}`;
+    [dom.whatsapp, dom.quickWhatsapp, dom.guidedWhatsapp].filter(Boolean).forEach((link) => { link.href = href; });
   }
 
   async function copyText(text) {
@@ -954,8 +1181,8 @@
     if (!currentResult) return;
     const url = buildScenarioUrl(currentResult.input);
     const shareData = {
-      title: "Meu cenário de alavancagem no simulador da Cristal",
-      text: `Alavancagem patrimonial · modo ${currentMode === "advanced" ? "avançado" : "simples"} · crédito estimado de ${formatCurrency(currentResult.estimatedCredit)} · contemplação considerada na ${currentResult.input.scenarioMonth}ª assembleia.`,
+      title: `Minha simulação para adquirir ${assetLabel()} na Cristal`,
+      text: `Aquisição de ${assetLabel()} · modo ${modeLabel()} · valor informado de ${formatCurrency(acquisitionContext.targetAssetValue)} · crédito estimado de ${formatCurrency(currentResult.estimatedCredit)} · contemplação considerada na ${currentResult.input.scenarioMonth}ª assembleia.`,
       url
     };
     try {
@@ -992,8 +1219,8 @@
   }
 
   function resetSimulation() {
-    currentMode = "simple";
-    setMode(currentMode, false);
+    acquisitionContext = { ...DEFAULT_ACQUISITION_CONTEXT };
+    setMode("guided", false);
     calculate("", { input: engine.DEFAULT_INPUT, forceSync: true, updateUrl: true });
     showActionFeedback("Valores padrão restaurados.");
   }
@@ -1029,10 +1256,10 @@
         trackEvent("stress_test_opened");
       }
     });
-    dom.whatsapp.addEventListener("click", () => trackEvent("simulator_whatsapp_clicked", {
+    [dom.whatsapp, dom.quickWhatsapp, dom.guidedWhatsapp].filter(Boolean).forEach((link) => link.addEventListener("click", () => trackEvent("simulator_whatsapp_clicked", {
       scenario_month: currentResult.input.scenarioMonth,
       credit_band: creditBand(currentResult.estimatedCredit)
-    }));
+    })));
   }
 
   function setupChartInteraction() {
@@ -1142,6 +1369,10 @@
       getCurrentResult: () => currentResult,
       getCurrentMode: () => currentMode,
       getActiveStrategy: () => activeStrategy,
+      getAcquisitionContext: () => ({ ...acquisitionContext }),
+      updateInput,
+      updateAcquisitionContext,
+      setMode,
       buildScenarioUrl,
       activate() {
         setStrategy("leverage", { updateUrl: true, focus: false });
