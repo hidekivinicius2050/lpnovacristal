@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": null,
+  "letters": [
+    {
+      "id": "c-f953a428cdc7405b",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 5000000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 35142.85,
+      "observation": ""
+    },
+    {
+      "id": "c-c96d0935b6d94a85",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 4500000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 31628.57,
+      "observation": ""
+    },
+    {
+      "id": "c-a5a24e215c8c4048",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 4000000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 28114.28,
+      "observation": ""
+    },
+    {
+      "id": "c-c8690b70c338466d",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 3800000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 26708.57,
+      "observation": ""
+    },
+    {
+      "id": "c-4f1af1138a54444b",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 3700000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 26005.71,
+      "observation": ""
+    },
+    {
+      "id": "c-8acddc0067aa49c9",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 3500000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 24600.0,
+      "observation": ""
+    },
+    {
+      "id": "c-d6ef321eb93845df",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 3400000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 23897.14,
+      "observation": ""
+    },
+    {
+      "id": "c-bde7dbcac32048d4",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 3200000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 22491.42,
+      "observation": ""
+    },
+    {
+      "id": "c-3b8ad5aba3cd4d81",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 3000000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 21085.71,
+      "observation": ""
+    },
+    {
+      "id": "c-3dce71b7854d45cc",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 2800000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 19680.0,
+      "observation": ""
+    },
+    {
+      "id": "c-3d12cf22989b40b1",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 2500000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 17571.42,
+      "observation": ""
+    },
+    {
+      "id": "c-21017ef70c884aca",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 2300000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 16165.71,
+      "observation": ""
+    },
+    {
+      "id": "c-83faf83debd24bd3",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 2000000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 14057.14,
+      "observation": ""
+    },
+    {
+      "id": "c-70859039a5db466b",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1900000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 13354.28,
+      "observation": ""
+    },
+    {
+      "id": "c-30900b8839ed4543",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1800000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 12651.42,
+      "observation": ""
+    },
+    {
+      "id": "c-4784cb96ec7e4618",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1700000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 11948.57,
+      "observation": ""
+    },
+    {
+      "id": "c-cb4b02884e2449d2",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1600000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 11245.71,
+      "observation": ""
+    },
+    {
+      "id": "c-971c1a6dce664c75",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1500000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 10542.85,
+      "observation": ""
+    },
+    {
+      "id": "c-f1f9f5819287474c",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1400000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 9840.0,
+      "observation": ""
+    },
+    {
+      "id": "c-3a93a8cd216449fe",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1300000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 9137.14,
+      "observation": ""
+    },
+    {
+      "id": "c-76e29cf88dbb4545",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1200000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 8434.28,
+      "observation": ""
+    },
+    {
+      "id": "c-aca8476f99a049a1",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 1000000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 7028.57,
+      "observation": ""
+    },
+    {
+      "id": "c-25099ecadf51459e",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 900000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 6325.71,
+      "observation": ""
+    },
+    {
+      "id": "c-f83e29cb4a7a49b2",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 800000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 5622.85,
+      "observation": ""
+    },
+    {
+      "id": "c-2fd417038ada49ec",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 700000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 4920.0,
+      "observation": ""
+    },
+    {
+      "id": "c-1dfb9c0ed1b74036",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 600000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 4217.14,
+      "observation": ""
+    },
+    {
+      "id": "c-4eaba45baa564e53",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 500000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 3514.28,
+      "observation": ""
+    },
+    {
+      "id": "c-c10ebf7b3f7646a4",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 400000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 2811.42,
+      "observation": ""
+    },
+    {
+      "id": "c-1bbc0f2abd86470b",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 300000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 2108.57,
+      "observation": ""
+    },
+    {
+      "id": "c-784369df427b4290",
+      "type": "imovel",
+      "admin": "Caixa",
+      "credit": 200000.0,
+      "entry": null,
+      "term": 175,
+      "installment": 1405.71,
+      "observation": ""
+    },
+    {
+      "id": "c-5eeb1bb66e6d46ec",
+      "type": "veiculo",
+      "admin": "Caixa",
+      "credit": 4700000.0,
+      "entry": 1939000.0,
+      "term": 183,
+      "installment": 31590.16,
+      "observation": ""
+    },
+    {
+      "id": "c-e37c856ce1234446",
+      "type": "veiculo",
+      "admin": "CNP",
+      "credit": 4565000.0,
+      "entry": 1438000.0,
+      "term": 123,
+      "installment": 45278.86,
+      "observation": ""
+    }
+  ]
+}

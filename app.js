@@ -1,22 +1,13 @@
 /*
   Cristal Consórcios — catálogo público
-  As cartas são carregadas das duas planilhas públicas já utilizadas no site.
-  Veja README.md para trocar as URLs ou atualizar o portfólio.
+  As cartas aprovadas no Excel são carregadas do catálogo publicado.
+  Veja README.md para atualizar o portfólio.
 */
 
 const CRISTAL = {
   whatsapp: "556133283000",
   leadsEndpoint: "https://script.google.com/macros/s/AKfycbzk_wG9H6G0YHeQgFPFLvS-emVFiAL-Z8WCl4xPiSulF97123r5aFhop85ky90ktjAY/exec",
-  sheets: [
-    {
-      type: "imovel",
-      url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnw9FKHx5rCVjRKwrD2elRDHhYAb2jpsBIpeNHjQEH1_LVO4YpETKufOz0mu7LLU3xu-EpL46s5t49/pub?gid=0&single=true&output=csv"
-    },
-    {
-      type: "veiculo",
-      url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnw9FKHx5rCVjRKwrD2elRDHhYAb2jpsBIpeNHjQEH1_LVO4YpETKufOz0mu7LLU3xu-EpL46s5t49/pub?gid=271229806&single=true&output=csv"
-    }
-  ]
+  catalogueUrl: "/data/cartas.json"
 };
 
 /*
@@ -68,6 +59,8 @@ let selectedCategory = "todos";
 let activeLetters = [];
 let visibleLetters = 6;
 let lastSimulation = null;
+let portfolioLoading = false;
+let portfolioFingerprint = "";
 const simulationState = { mode: "consorcio", asset: "imovel" };
 
 const dom = {
@@ -235,29 +228,41 @@ function mapSheetToLetters(csv, type) {
 }
 
 async function loadPortfolio() {
+  if (portfolioLoading) return;
+  portfolioLoading = true;
   try {
-    const responses = await Promise.allSettled(CRISTAL.sheets.map(async (sheet) => {
-      const response = await fetch(sheet.url, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Planilha indisponível (${response.status})`);
-      return mapSheetToLetters(await response.text(), sheet.type);
-    }));
-
-    const availableLists = responses
-      .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value);
-    if (!availableLists.length) throw new Error("Nenhuma planilha respondeu");
-
-    allLetters = availableLists.flat().sort((first, second) => second.creditValue - first.creditValue);
+    const response = await fetch(`${CRISTAL.catalogueUrl}?v=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Catálogo indisponível (${response.status})`);
+    const published = CristalCatalogue.readPublished(await response.json());
+    const fingerprint = JSON.stringify(published.letters);
+    if (fingerprint === portfolioFingerprint) return;
+    const firstLoad = !portfolioFingerprint;
+    portfolioFingerprint = fingerprint;
+    closeLetterModal();
+    allLetters = published.letters.map((letter) => ({
+      id: letter.id, type: letter.type, admin: letter.admin,
+      credit: MONEY_FORMATTER.format(letter.credit), creditValue: letter.credit,
+      entry: letter.entry === null ? "Sob consulta" : MONEY_FORMATTER.format(letter.entry),
+      entryValue: letter.entry === null ? 0 : letter.entry, hasEntryValue: letter.entry !== null,
+      term: String(letter.term), termValue: letter.term,
+      installment: MONEY_FORMATTER.format(letter.installment), installmentValue: letter.installment,
+      hasInstallmentValue: true,
+      observation: letter.observation || "Condições disponíveis mediante consulta."
+    })).sort((first, second) => second.creditValue - first.creditValue);
     updateCatalogueCounts();
     resetCatalogueVisibility();
     renderLetters();
     if (lastSimulation) renderSimulationResults(lastSimulation);
-    restoreHashLocation();
-    dom.status.innerHTML = responses.some((result) => result.status === "rejected")
-      ? "<span></span> Portfólio parcial — consulte a equipe"
-      : "<span></span> Portfólio ativo";
+    if (firstLoad) restoreHashLocation();
+    dom.status.innerHTML = allLetters.length ? "<span></span> Portfólio ativo" : "<span></span> Sem cartas disponíveis";
   } catch (error) {
     console.error("Não foi possível carregar as cartas:", error);
+    portfolioFingerprint = "";
+    allLetters = [];
+    activeLetters = [];
+    closeLetterModal();
+    updateCatalogueCounts();
+    if (lastSimulation) renderSimulationResults(lastSimulation);
     dom.cards.setAttribute("aria-busy", "false");
     dom.cards.innerHTML = `
       <div class="catalogue-error">
@@ -265,6 +270,8 @@ async function loadPortfolio() {
         <a class="text-link" href="${whatsappLink("Olá, não consegui ver as cartas disponíveis no site. Poderia me ajudar?")}" target="_blank" rel="noopener">Falar com um especialista ${actionIcon("right")}</a>
       </div>`;
     dom.status.innerHTML = "<span></span> Consulte a equipe";
+  } finally {
+    portfolioLoading = false;
   }
 }
 
@@ -1215,6 +1222,8 @@ function init() {
   setupModal();
   setupWhatsappFloatAvoidance();
   loadPortfolio();
+  window.setInterval(() => { if (!document.hidden) loadPortfolio(); }, 60000);
+  window.addEventListener("focus", loadPortfolio);
 }
 
 document.addEventListener("DOMContentLoaded", init);

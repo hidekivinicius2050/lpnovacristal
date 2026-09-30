@@ -51,17 +51,18 @@ Os dados empresariais usados nos rodapés e nos schemas das páginas geradas fic
 
 ## Como publicar ou atualizar cartas
 
-O catálogo usa as **mesmas duas planilhas públicas do site atual**. Portanto, a equipe continua publicando cartas pela planilha de controle que já utiliza; não é preciso editar o código para atualizar o portfólio.
+O catálogo usa `data/cartas.json`, enviado pelo botão **Publicar no site** da planilha Excel da Cristal. A equipe define o acréscimo sobre a entrada, marca **SIM** e mantém a situação **Disponível**. As 32 ofertas que já estavam públicas foram preservadas na migração.
 
-As colunas esperadas em cada aba da planilha são:
+O contrato público é validado por `catalogue-data.js`:
 
 ```text
-Administradora | Crédito | Entrada | Saldo a pagar | Parcela | Observação
+schemaVersion: 1
+letters: [{ id, type, admin, credit, entry, term, installment, observation }]
 ```
 
-O campo `Saldo a pagar` é exibido como quantidade de parcelas restantes, como acontece no site atual. Para remover uma carta do portal, remova ou oculte a linha correspondente na planilha publicada. Depois da atualização, o Google pode levar alguns minutos para refletir os dados públicos.
+Somente os preços finais e os campos públicos são enviados. Custo, margem, lucro e identidade do parceiro ficam no Excel. Entradas sob consulta das ofertas anteriores são preservadas como `null`. `letters: []` representa um catálogo vazio, sem recuperação das planilhas antigas.
 
-As URLs das duas planilhas estão no início de [`app.js`](app.js). Caso a Cristal crie uma nova planilha, basta substituir as URLs em `CRISTAL.sheets`.
+Para retirar uma carta, desmarque a publicação ou mude sua situação e publique novamente. O botão envia a lista completa aprovada pelo Git autenticado do computador, sem senhas na planilha, e aguarda a confirmação do deploy. O site consulta o catálogo na abertura, ao voltar à janela e a cada minuto enquanto estiver visível. Alterações de parceiros exigem nova aprovação no Excel; a atualização das abas do Manoel continua manual.
 
 ## Simulador e referências financeiras
 
