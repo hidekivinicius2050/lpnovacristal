@@ -296,7 +296,16 @@ const P1 = {
 const DORES_SUB = 'Pode marcar quantas opções fizerem sentido.';
 const DORES_TITLE = 'Seja honesto: qual dessas situações você já viveu ou tem medo de viver?';
 const CAP_SUB = 'Sem medo — é só para calibrar a estratégia ideal pra você.';
-const CAPACIDADE_OPTS = [
+/* Capacidade — trilha IMÓVEL (sem a faixa "Até R$ 500") */
+const CAPACIDADE_IMOVEL = [
+  { v:'500_1000',        t:'De R$ 500 a R$ 1.000',                         icon:'wallet', pts:6 },
+  { v:'1000_2000',       t:'De R$ 1.000 a R$ 2.000',                       icon:'bars',   pts:9 },
+  { v:'2000_4000',       t:'De R$ 2.000 a R$ 4.000',                       icon:'trend',  pts:12 },
+  { v:'acima_4000',      t:'Acima de R$ 4.000',                            icon:'gem',    pts:15 },
+  { v:'entender_opcoes', t:'Prefiro entender as opções antes de definir',  icon:'help',   pts:2 }
+];
+/* Capacidade — trilha AUTO (mantém "Até R$ 500") */
+const CAPACIDADE_AUTO = [
   { v:'ate_500',         t:'Até R$ 500',                                   icon:'coins',  pts:3 },
   { v:'500_1000',        t:'De R$ 500 a R$ 1.000',                         icon:'wallet', pts:6 },
   { v:'1000_2000',       t:'De R$ 1.000 a R$ 2.000',                       icon:'bars',   pts:9 },
@@ -370,7 +379,7 @@ const TRILHAS = {
       { v:'acima_800k',      t:'Acima de R$ 800 mil',                icon:'gem',    pts:15 },
       { v:'entender_opcoes', t:'Quero entender as opções primeiro',  icon:'help',   pts:2 }
     ]},
-    { id:'capacidade', type:'single', title:'Qual valor mensal cabe com tranquilidade no seu orçamento hoje?', sub:CAP_SUB, options:CAPACIDADE_OPTS },
+    { id:'capacidade', type:'single', title:'Qual valor mensal cabe com tranquilidade no seu orçamento hoje?', sub:CAP_SUB, options:CAPACIDADE_IMOVEL },
     { id:'dores', type:'multi', title:DORES_TITLE, sub:DORES_SUB, options:[
       { v:'cansei_aluguel',      t:'Cansei de pagar aluguel que nunca vai ser meu',                                   icon:'key',       pts:4 },
       { v:'medo_juntar',         t:'Tenho medo de nunca conseguir juntar o valor à vista enquanto a vida passa',      icon:'hourglass', pts:4 },
@@ -401,7 +410,7 @@ const TRILHAS = {
       { v:'acima_250k',  t:'Acima de R$ 250 mil (luxo ou frota)',               icon:'gem',    pts:15 },
       { v:'nao_definiu', t:'Ainda não defini o veículo ideal',                  icon:'search', pts:3 }
     ]},
-    { id:'capacidade', type:'single', title:'Qual valor mensal cabe com tranquilidade no seu orçamento hoje?', sub:CAP_SUB, options:CAPACIDADE_OPTS },
+    { id:'capacidade', type:'single', title:'Qual valor mensal cabe com tranquilidade no seu orçamento hoje?', sub:CAP_SUB, options:CAPACIDADE_AUTO },
     { id:'dores', type:'multi', title:DORES_TITLE, sub:DORES_SUB, options:[
       { v:'juros_absurdos',      t:'Já paguei (ou pago) juros absurdos e sinto que pago o carro três vezes',       icon:'percent',   pts:4 },
       { v:'score_limita',        t:'Meu nome ou score me limitam — não consigo aprovar financiamento decente',     icon:'lock',      pts:3 },
