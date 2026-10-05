@@ -242,8 +242,8 @@ async function loadPortfolio() {
     allLetters = published.letters.map((letter) => ({
       id: letter.id, type: letter.type, admin: letter.admin,
       credit: MONEY_FORMATTER.format(letter.credit), creditValue: letter.credit,
-      entry: letter.entry === null ? "Sob consulta" : MONEY_FORMATTER.format(letter.entry),
-      entryValue: letter.entry === null ? 0 : letter.entry, hasEntryValue: letter.entry !== null,
+      entry: "Consultar",
+      entryValue: 0, hasEntryValue: false,
       term: String(letter.term), termValue: letter.term,
       installment: MONEY_FORMATTER.format(letter.installment), installmentValue: letter.installment,
       hasInstallmentValue: true,
@@ -345,7 +345,7 @@ function letterCard(letter, index) {
         <h3 class="letter-credit">${escapeHTML(letter.credit)}<span>Valor do crédito</span></h3>
         <div class="letter-details">
           <div><span>Entrada</span><strong>${escapeHTML(letter.entry)}</strong></div>
-          <div><span>Parcelas</span><strong>${escapeHTML(compactTerm)}</strong></div>
+          <div><span>Parcelas restantes</span><strong>${escapeHTML(compactTerm)}</strong></div>
           <div><span>Parcela</span><strong>${escapeHTML(letter.installment)}</strong></div>
           <div><span>Administradora</span><strong>${escapeHTML(letter.admin)}</strong></div>
         </div>
@@ -413,7 +413,7 @@ function openLetter(index) {
     ["Administradora", letter.admin],
     ["Tipo", letter.type === "imovel" ? "Imóvel" : "Veículo"],
     ["Entrada", letter.entry],
-    ["Parcelas", compactTerm],
+    ["Parcelas restantes", compactTerm],
     ["Valor da parcela", letter.installment],
     ["Observação", letter.observation]
   ].map(([label, value]) => `<div><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></div>`).join("");

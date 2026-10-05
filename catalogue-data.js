@@ -1,4 +1,4 @@
-/* Contrato público usado pelo Excel e pelo catálogo. Somente preços finais. */
+/* Contrato público usado pelo Excel e pelo catálogo. Entrada somente por consulta. */
 (function (root) {
   "use strict";
   const fields = ["id", "type", "admin", "credit", "entry", "term", "installment", "observation"];
@@ -13,7 +13,7 @@
       ids.add(letter.id);
       if (!["imovel", "veiculo"].includes(letter.type) || typeof letter.admin !== "string" || !letter.admin.trim()) throw new Error("Categoria ou administradora inválida");
       if (!Number.isFinite(letter.credit) || letter.credit <= 0 || !Number.isInteger(letter.term) || letter.term <= 0 || !Number.isFinite(letter.installment) || letter.installment <= 0) throw new Error("Dados da carta incompletos");
-      if (letter.entry !== null && (!Number.isFinite(letter.entry) || letter.entry < 0)) throw new Error("Entrada inválida");
+      if (letter.entry !== null) throw new Error("A entrada deve permanecer sob consulta");
       if (typeof letter.observation !== "string") throw new Error("Observação inválida");
       return {...letter, admin: letter.admin.trim()};
     });
