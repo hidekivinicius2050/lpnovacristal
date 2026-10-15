@@ -151,7 +151,7 @@ button { cursor: pointer; }
 .catalogue-tab.active { color: var(--ink); }
 .catalogue-tab.active::after { background: var(--blue); }
 .catalogue-tab.active span { color: #fff; background: var(--ink); }
-.filter-panel { display: grid; grid-template-columns: minmax(220px, 1.2fr) .8fr .8fr auto; gap: 10px; margin-top: 23px; padding: 12px; background: rgba(255,255,255,.73); border: 1px solid rgba(142,187,210,.5); border-radius: 12px; box-shadow: 0 12px 35px rgba(36,98,130,.06); backdrop-filter: blur(8px); }
+.filter-panel { display: grid; grid-template-columns: minmax(200px, 1.2fr) repeat(3, minmax(0, .8fr)) auto; gap: 10px; margin-top: 23px; padding: 12px; background: rgba(255,255,255,.73); border: 1px solid rgba(142,187,210,.5); border-radius: 12px; box-shadow: 0 12px 35px rgba(36,98,130,.06); backdrop-filter: blur(8px); }
 .filter-search, .filter-select-wrap { position: relative; display: flex; align-items: center; min-height: 45px; border: 1px solid #cbdce5; border-radius: 6px; background: #fff; }
 .filter-search > span { padding-left: 14px; color: #668092; font-size: 21px; line-height: 1; transform: rotate(-15deg); }
 .filter-search input, .filter-select-wrap select { width: 100%; min-height: 43px; padding: 0 12px; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 13px; }
@@ -374,7 +374,7 @@ body:has(.simulation-results:not([hidden])) .whatsapp-float small { display: non
   .main-nav { gap: 17px; }
   .main-nav a { font-size: 12px; }
   .nav-cta { display: none; }
-  .filter-panel { grid-template-columns: minmax(220px,1fr) 1fr 1fr; }
+  .filter-panel { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .clear-filters { grid-column: 1/-1; justify-self: end; }
   .safety-layout, .about-layout, .contact-layout { gap: 65px; }
   .process-layout, .faq-layout { gap: 70px; }

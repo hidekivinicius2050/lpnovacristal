@@ -69,6 +69,7 @@ const dom = {
   tabs: [...document.querySelectorAll(".catalogue-tab")],
   search: document.querySelector("#search-input"),
   credit: document.querySelector("#credit-filter"),
+  installment: document.querySelector("#installment-filter"),
   term: document.querySelector("#term-filter"),
   clear: document.querySelector("#clear-filters"),
   totalCount: document.querySelector("#total-count"),
@@ -298,17 +299,17 @@ function currentFilters() {
   return {
     search: normalize(dom.search.value),
     credit: dom.credit.value,
+    installment: dom.installment.value,
     term: dom.term.value
   };
 }
 
-function matchesCredit(value, range) {
+function matchesAmount(value, range) {
   if (range === "all") return true;
-  if (range === "under300") return value < 300000;
-  if (range === "300to600") return value >= 300000 && value < 600000;
-  if (range === "600to1000") return value >= 600000 && value <= 1000000;
-  if (range === "over1000") return value > 1000000;
-  return true;
+  if (!Number.isFinite(value) || value <= 0) return false;
+  const limit = /^(upTo|over)(\d+)$/.exec(range);
+  if (!limit) return false;
+  return limit[1] === "upTo" ? value <= Number(limit[2]) : value > Number(limit[2]);
 }
 
 function matchesTerm(value, range) {
@@ -326,7 +327,8 @@ function getVisibleLetters() {
     const haystack = normalize(`${letter.admin} ${letter.credit} ${letter.entry} ${letter.observation}`);
     return categoryMatch
       && (!filters.search || haystack.includes(filters.search))
-      && matchesCredit(letter.creditValue, filters.credit)
+      && matchesAmount(letter.creditValue, filters.credit)
+      && matchesAmount(letter.installmentValue, filters.installment)
       && matchesTerm(letter.termValue, filters.term);
   });
 }
@@ -440,6 +442,7 @@ function setCategory(category) {
 function clearFilters() {
   dom.search.value = "";
   dom.credit.value = "all";
+  dom.installment.value = "all";
   dom.term.value = "all";
   resetCatalogueVisibility();
   renderLetters();
@@ -447,7 +450,7 @@ function clearFilters() {
 
 function setupCatalogueControls() {
   dom.tabs.forEach((tab) => tab.addEventListener("click", () => setCategory(tab.dataset.category)));
-  [dom.search, dom.credit, dom.term].forEach((control) => {
+  [dom.search, dom.credit, dom.installment, dom.term].forEach((control) => {
     control.addEventListener(control === dom.search ? "input" : "change", () => {
       resetCatalogueVisibility();
       renderLetters();
@@ -878,6 +881,7 @@ function bindSimulationResultActions(data) {
   document.querySelector("#simulation-view-all")?.addEventListener("click", () => {
     dom.search.value = "";
     dom.credit.value = "all";
+    dom.installment.value = "all";
     dom.term.value = "all";
     setCategory(data.asset);
     document.querySelector("#cartas")?.scrollIntoView({ behavior: "smooth", block: "start" });

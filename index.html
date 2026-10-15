@@ -27,9 +27,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20260915-2">
+    <link rel="stylesheet" href="styles.css?v=20261015-filtros">
     <script defer src="catalogue-data.js?v=20261005-consulta"></script>
-    <script defer src="app.js?v=20261005-consulta"></script>
+    <script defer src="app.js?v=20261015-filtros"></script>
   </head>
   <body>
     <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -226,10 +226,33 @@
               <label class="sr-only" for="credit-filter">Filtrar por crédito</label>
               <select id="credit-filter">
                 <option value="all">Faixa de crédito</option>
-                <option value="under300">Até R$ 300 mil</option>
-                <option value="300to600">R$ 300 a R$ 600 mil</option>
-                <option value="600to1000">R$ 600 mil a R$ 1 mi</option>
-                <option value="over1000">Acima de R$ 1 mi</option>
+                <option value="upTo30000">Até R$ 30 mil</option>
+                <option value="upTo50000">Até R$ 50 mil</option>
+                <option value="upTo80000">Até R$ 80 mil</option>
+                <option value="upTo100000">Até R$ 100 mil</option>
+                <option value="upTo150000">Até R$ 150 mil</option>
+                <option value="upTo200000">Até R$ 200 mil</option>
+                <option value="upTo300000">Até R$ 300 mil</option>
+                <option value="upTo600000">Até R$ 600 mil</option>
+                <option value="upTo1000000">Até R$ 1 mi</option>
+                <option value="over1000000">Acima de R$ 1 mi</option>
+              </select>
+            </div>
+            <div class="filter-select-wrap">
+              <label class="sr-only" for="installment-filter">Filtrar pelo valor da parcela anunciada</label>
+              <select id="installment-filter">
+                <option value="all">Valor da parcela</option>
+                <option value="upTo500">Até R$ 500</option>
+                <option value="upTo750">Até R$ 750</option>
+                <option value="upTo1000">Até R$ 1.000</option>
+                <option value="upTo1200">Até R$ 1.200</option>
+                <option value="upTo1500">Até R$ 1.500</option>
+                <option value="upTo2000">Até R$ 2.000</option>
+                <option value="upTo2500">Até R$ 2.500</option>
+                <option value="upTo3000">Até R$ 3.000</option>
+                <option value="upTo5000">Até R$ 5.000</option>
+                <option value="upTo10000">Até R$ 10.000</option>
+                <option value="over10000">Acima de R$ 10.000</option>
               </select>
             </div>
             <div class="filter-select-wrap">
