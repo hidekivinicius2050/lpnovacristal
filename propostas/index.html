@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#061334">
+  <title>Gerador de propostas | Cristal Consórcios</title>
+  <link rel="stylesheet" href="propostas.css?v=20261020-1">
+  <script defer src="vendor/jspdf.umd.min.js"></script>
+  <script defer src="engine.js?v=20261020-1"></script>
+  <script defer src="pdf.js?v=20261020-1"></script>
+  <script defer src="propostas.js?v=20261020-1"></script>
+</head>
+<body>
+  <header><div class="shell top"><img src="../assets/logo.png" alt="Cristal Consórcios" width="180" height="90"><span>FERRAMENTAS DA EQUIPE</span></div></header>
+  <main class="shell">
+    <div class="intro"><div><p class="eyebrow">PROPOSTAS CRISTAL</p><h1>Uma boa proposta começa aqui.</h1><p>Preencha as condições e baixe o PDF pronto para enviar.</p></div><button class="quiet" id="example" type="button">Carregar exemplo</button></div>
+    <form id="proposal-form" novalidate>
+      <div class="layout"><div class="editor">
+        <section class="panel"><div class="section-title"><span class="number">01</span><h2>Cliente e proposta</h2></div>
+          <div class="grid"><label class="wide">Nome do cliente<input id="client" maxlength="90" autocomplete="off" placeholder="Como o cliente deve aparecer no PDF" required></label>
+          <label>Data da proposta<input id="date" type="date" required></label>
+          <label>Tipo de crédito<select id="asset"><option value="imovel">Imóvel</option><option value="veiculo">Veículo</option></select></label></div>
+        </section>
+        <section class="panel"><div class="section-title"><span class="number">02</span><h2>Condições das cartas</h2></div>
+          <label class="check"><input type="checkbox" id="multiple"> Mais de uma carta</label>
+          <p class="hint">As parcelas começam juntas. Ao terminar um prazo, o pagamento mensal diminui.</p>
+          <div id="cards"></div><button type="button" class="secondary" id="add-card" hidden>+ Adicionar carta</button>
+        </section>
+        <section class="panel"><div class="section-title"><span class="number">03</span><h2>Comparativo com financiamento</h2></div>
+          <label class="check"><input id="compare" type="checkbox" checked> Incluir comparação no PDF</label>
+          <p class="hint">Mesmo valor do bem, entrada e prazo da carta. Referências editáveis; não representam uma proposta aprovada.</p>
+          <details id="assumptions"><summary>Ajustar taxas e encargos</summary>
+            <div id="property-settings"><p class="hint">SAC · perfil técnico de 40 anos · referências consultadas em 20/10/2026.</p>
+              <div class="grid"><label>Itaú · juros (% a.a.)<input id="itau-rate" type="number" min="0" max="100" step="0.01" value="13.85"></label><label>Santander · juros (% a.a.)<input id="santander-rate" type="number" min="0" max="100" step="0.01" value="11.69"></label>
+              <label>Itaú · avaliação (R$)<input id="itau-fee" inputmode="decimal" value="3.420,00"></label><label>Santander · avaliação (R$)<input id="santander-fee" inputmode="decimal" value="3.300,00"></label>
+              <label>TR do cenário (% a.m.)<input id="tr" type="number" min="0" max="5" step="0.0001" value="0.1616"></label><label>Administração mensal por banco (R$)<input id="admin" inputmode="decimal" value="25,00"></label>
+              <label>MIP · saldo (% a.m.)<input id="mip" type="number" min="0" max="5" step="0.00001" value="0.03073"></label><label>DFI · imóvel (% a.m.)<input id="dfi" type="number" min="0" max="5" step="0.00001" value="0.00899"></label></div>
+              <p class="hint">Seguros são uma hipótese técnica uniforme, calibrada em apólice histórica (2012), e não preços atuais de Itaú ou Santander. A idade fica constante em 40 anos. TR constante é cenário, não previsão. Substitua pelas condições cotadas quando disponíveis.</p>
+            </div>
+            <div id="vehicle-settings" hidden><p class="hint">Tabela Price · média do mercado publicada pelo BCB, agosto/2026. Não é taxa específica de um banco. Seguros e tarifas imobiliárias não se aplicam.</p>
+              <div class="grid"><label>Juros de referência (% a.m.)<input id="vehicle-rate" type="number" min="0" max="10" step="0.01" value="1.97"></label><label>IOF e despesas iniciais cotados (R$)<input id="vehicle-fee" inputmode="decimal" value="0,00"></label></div>
+              <p class="hint">Sem valor cotado, IOF e despesas ficam fora do total. O comparativo não é um CET. O prazo pode exceder os limites comerciais de financiamento de veículos.</p>
+            </div>
+            <label>Referência das condições editadas (opcional)<input id="custom-reference" maxlength="160" placeholder="Ex.: simulação do banco recebida em 20/10/2026"></label>
+            <p class="hint">Taxas e encargos editados aparecem como cenário informado pela equipe.</p>
+            <details class="sources"><summary>Fontes das referências</summary><ul>
+              <li><a href="https://www.itau.com.br/emprestimos-financiamentos/credito-imobiliario" target="_blank" rel="noreferrer">Itaú: juros imobiliários a partir de 13,85% a.a. + TR</a></li>
+              <li><a href="https://www.santander.com.br/creditos-e-financiamentos/para-sua-casa/portabilidade-de-financiamento-imobiliario/" target="_blank" rel="noreferrer">Santander: exemplo público de aquisição a 11,69% a.a. + TR</a></li>
+              <li><a href="https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf" target="_blank" rel="noreferrer">Itaú: tabela de tarifas Personnalité (referência)</a></li>
+              <li><a href="https://www.santander.com.br/parceiros-imobiliarios" target="_blank" rel="noreferrer">Santander: avaliação imobiliária</a> · <a href="https://www.santander.com.br/blog/para-voce/sfh" target="_blank" rel="noreferrer">administração SFH</a></li>
+              <li><a href="https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarSeries&amp;series=7811" target="_blank" rel="noreferrer">BCB: TR de 01/10/2026</a></li>
+              <li><a href="https://ww3.itau.com.br/imobline/pos/contrato/apolices_pdf/4F.pdf" target="_blank" rel="noreferrer">Seguros: calibração histórica fora do SFH (2012)</a></li>
+              <li><a href="https://dadosabertos.bcb.gov.br/dataset/25471-taxa-media-mensal-de-juros-das-operacoes-de-credito-com-recursos-livres---pessoas-fisicas---a" target="_blank" rel="noreferrer">BCB: média de juros de veículos, série 25471</a></li>
+            </ul></details>
+          </details>
+        </section>
+      </div>
+      <aside><section class="preview"><p class="eyebrow">RESUMO DA PROPOSTA</p><h2 id="preview-client">Seu cliente</h2><p class="credit-label">Crédito disponível</p><p class="big" id="preview-credit">R$ 0,00</p><div class="summary-line"><span>Entrada</span><strong id="preview-entry">R$ 0,00</strong></div><div class="summary-line"><span>Transferência</span><strong id="preview-transfer">R$ 0,00</strong></div><div class="divider"></div><h3>Pagamento mensal</h3><div id="preview-stages"><p class="hint">Preencha as condições ao lado.</p></div><div class="divider"></div><div class="summary-line"><span>Prazo restante</span><strong id="preview-term">—</strong></div><div class="summary-line"><span>Saldo das parcelas</span><strong id="preview-debt">R$ 0,00</strong></div><div class="summary-total"><span>Total nominal atual</span><strong id="preview-total">R$ 0,00</strong></div><button type="submit" id="generate">Baixar proposta em PDF <span aria-hidden="true">↓</span></button><p id="status" role="status" aria-live="polite"></p></section><p class="local-note">Os dados preenchidos são processados neste navegador. Nenhum cadastro de cliente é enviado ou salvo pelo gerador.</p></aside>
+      </div>
+    </form>
+    <footer>CRISTAL CONSÓRCIOS <span>Brasília · (61) 3328-3000</span></footer>
+  </main>
+  <template id="card-template"><fieldset class="card"><legend>Carta <span class="card-index"></span></legend><button type="button" class="remove" aria-label="Remover carta">Remover</button><div class="grid">
+    <label class="wide">Administradora<input data-field="administrator" maxlength="45" placeholder="Ex.: Caixa, Itaú, Porto" required></label>
+    <label>Crédito (R$)<input data-field="credit" inputmode="decimal" placeholder="0,00" required></label><label>Entrada (R$)<input data-field="entry" inputmode="decimal" placeholder="0,00" required></label>
+    <label>Transferência<select data-field="transferMode"><option value="percent">Percentual do crédito (%)</option><option value="fixed">Valor fixo (R$)</option></select></label><label><span data-transfer-label>Transferência (%)</span><input data-field="transferInput" inputmode="decimal" value="1" required></label>
+    <label>Parcelas restantes<input data-field="months" type="number" min="1" max="420" step="1" placeholder="Ex.: 120" required></label><label>Valor da parcela (R$)<input data-field="payment" inputmode="decimal" placeholder="0,00" required></label>
+  </div></fieldset></template>
+</body></html>
