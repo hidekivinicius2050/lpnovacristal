@@ -99,6 +99,20 @@ main{flex:1;padding:12px 0 28px}
 @keyframes pulse{50%{opacity:.3}}
 #preMsg{transition:opacity .25s}
 
+/* Vídeo de alinhamento */
+.vid-head{text-align:center;margin:14px 0 18px}
+.vid-head h2{font-size:23px;line-height:1.3;font-weight:700;color:var(--accent-dark);margin-bottom:6px}
+.vid-head p{color:var(--muted);font-size:14.5px;line-height:1.55}
+.vid-box{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(1,8,62,.18)}
+.vid-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.vid-play{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border:0;cursor:pointer;background:rgba(0,4,38,.45);color:#fff;font:600 15px 'Poppins',sans-serif}
+.vid-play .pb{width:72px;height:72px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.vid-play .pb svg{width:30px;height:30px;fill:var(--accent);margin-left:4px}
+.vid-play:focus-visible{outline:3px solid var(--accent-line);outline-offset:-3px}
+.vid-err{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:#fff;font-size:14px;line-height:1.5;background:rgba(0,4,38,.85)}
+.vid-hint{margin-top:12px;text-align:center;font-size:13px;color:var(--muted)}
+.vid-hint strong{color:var(--accent);font-weight:600}
+
 /* Formulário */
 .f-head{text-align:center;margin:18px 0 24px}
 .f-head h2{font-size:25px;font-weight:700;color:var(--accent-dark);margin-bottom:6px}
@@ -164,6 +178,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="pbar"><div class="pfill" id="pfill"></div></div>
         <div class="chip"><span class="dot"></span><span id="preMsg">Analisando suas respostas</span></div>
       </div>
+    </section>
+
+    <!-- Vídeo de alinhamento (por trilha) -->
+    <section id="vid" class="hidden">
+      <div class="vid-head">
+        <h2>Antes de ver seu resultado, assista a este vídeo</h2>
+        <p>Ele explica como a estratégia funciona para o objetivo que você escolheu.</p>
+      </div>
+      <div class="vid-box">
+        <video id="vPlayer" playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen" oncontextmenu="return false"></video>
+        <button class="vid-play hidden" id="vPlay" type="button" aria-label="Assistir ao vídeo">
+          <span class="pb"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg></span>
+          Toque para assistir com som
+        </button>
+        <div class="vid-err hidden" id="vErr">Não foi possível carregar o vídeo. Você já pode continuar.</div>
+      </div>
+      <p class="vid-hint" id="vHint">O botão é liberado em <strong id="vCount">30</strong>s</p>
+      <button class="cta" id="btnVid" type="button" disabled>Continuar para meu diagnóstico</button>
     </section>
 
     <!-- Formulário -->
@@ -245,6 +277,17 @@ const WHATSAPP_VERIFY_URL = '';
 
 const AUTO_ADVANCE_MS   = 220;
 const PRELOADER_MS      = 3200;
+
+/* ---------- VÍDEO DE ALINHAMENTO (entre o preloader e o formulário) ----------
+   Um vídeo por trilha, auto-hospedado. "Quero entender o melhor cenário" segue a trilha imóvel → vídeo imóvel.
+   Pasta: /quiz/ (mesma do quiz). Extensão .mp4 */
+const VIDEO_BASE = 'https://www.cristalconsorcios.com.br/quiz/';
+const VIDEOS = {
+  alavancagem: 'alinhamento-alavancagem-patrimonial.mp4',
+  imovel:      'video-alinhamento-imovel.mp4',
+  auto:        'video-alinhamento_veiculo.mp4'
+};
+const VIDEO_UNLOCK_S = 30;        // segundos assistidos para liberar o botão
 const REDIRECT_DELAY_MS = 900;
 
 /* ---------- LEAD SCORE (editável) ---------- */
@@ -588,9 +631,61 @@ function finishQuestions(){
   setTimeout(() => {
     clearInterval(iv);
     pre.classList.add('hidden');
-    const f = $('form'); f.classList.remove('hidden'); f.classList.add('fade');
-    window.scrollTo(0, 0);
+    showVideo();
   }, PRELOADER_MS);
+}
+
+/* ---------- VÍDEO ---------- */
+function videoUrl(t){
+  const f = VIDEOS[t]; if (!f) return '';
+  return VIDEO_BASE + encodeURIComponent(f.normalize ? f.normalize('NFC') : f);
+}
+function showForm(){
+  $('vid').classList.add('hidden');
+  try { const v = $('vPlayer'); v.pause(); } catch (e) {}
+  const f = $('form'); f.classList.remove('hidden'); f.classList.add('fade');
+  window.scrollTo(0, 0);
+}
+function showVideo(){
+  const url = videoUrl(S.trilha);
+  if (!url) { showForm(); return; }                     // trilha sem vídeo → direto ao formulário
+  const sec = $('vid'); sec.classList.remove('hidden'); sec.classList.add('fade');
+  window.scrollTo(0, 0);
+  const v = $('vPlayer'), play = $('vPlay'), btn = $('btnVid');
+  let watched = 0, last = null, unlocked = false, failed = false;
+  const unlock = () => {
+    if (unlocked) return; unlocked = true;
+    btn.disabled = false; $('vHint').classList.add('hidden');
+  };
+  const tick = () => {
+    const left = Math.max(0, Math.ceil(VIDEO_UNLOCK_S - watched));
+    $('vCount').textContent = left;
+    if (left === 0) unlock();
+  };
+  v.addEventListener('timeupdate', () => {
+    const t = v.currentTime;
+    if (last !== null && t > last && t - last < 1.5) watched += t - last;   // conta só o tempo realmente assistido
+    last = t; tick();
+  });
+  v.addEventListener('seeking', () => { last = v.currentTime; });
+  v.addEventListener('ended', unlock);
+  const showPlay = () => { if (!failed) play.classList.remove('hidden'); };
+  v.addEventListener('pause', () => { if (!v.ended && !unlocked) showPlay(); });
+  v.addEventListener('play', () => { play.classList.add('hidden'); last = v.currentTime; });
+  v.addEventListener('error', () => { failed = true; $('vErr').classList.remove('hidden'); play.classList.add('hidden'); unlock(); });   // vídeo fora do ar não trava o lead
+  v.addEventListener('click', () => { if (v.paused) startPlay(); else v.pause(); });
+  play.addEventListener('click', startPlay);
+  btn.addEventListener('click', () => { if (!btn.disabled) showForm(); });
+  function startPlay(){
+    v.muted = false;
+    const pr = v.play();
+    if (pr && pr.catch) pr.catch(showPlay);
+  }
+  v.src = url;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: 'quiz_video_alinhamento', trilha: S.trilha });
+  tick();
+  startPlay();                                           // autoplay com som; se o navegador bloquear, mostra "Toque para assistir"
 }
 
 /* ---------- FORMULÁRIO ---------- */
