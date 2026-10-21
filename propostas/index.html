@@ -5,11 +5,11 @@
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#061334">
   <title>Gerador de propostas | Cristal Consórcios</title>
-  <link rel="stylesheet" href="propostas.css?v=20261020-1">
+  <link rel="stylesheet" href="propostas.css?v=20261021-modelos">
   <script defer src="vendor/jspdf.umd.min.js"></script>
   <script defer src="engine.js?v=20261020-1"></script>
-  <script defer src="pdf.js?v=20261021-transferencia-resumo"></script>
-  <script defer src="propostas.js?v=20261020-1"></script>
+  <script defer src="pdf.js?v=20261021-modelos"></script>
+  <script defer src="propostas.js?v=20261021-modelos"></script>
 </head>
 <body>
   <header><div class="shell top"><img src="../assets/logo.png" alt="Cristal Consórcios" width="180" height="90"><span>FERRAMENTAS DA EQUIPE</span></div></header>
@@ -21,13 +21,15 @@
           <div class="grid"><label class="wide">Nome do cliente<input id="client" maxlength="90" autocomplete="off" placeholder="Como o cliente deve aparecer no PDF" required></label>
           <label>Data da proposta<input id="date" type="date" required></label>
           <label>Tipo de crédito<select id="asset"><option value="imovel">Imóvel</option><option value="veiculo">Veículo</option></select></label></div>
+          <label class="model-picker">Modelo da proposta<select id="model"><option value="completa">Completo — com resumo financeiro</option><option value="resumida">Resumido — crédito, entrada e parcelas</option></select></label>
+          <p class="hint" id="model-description">Inclui prazo total, transferência, desembolso inicial e totais. A comparação com financiamento é opcional.</p>
         </section>
         <section class="panel"><div class="section-title"><span class="number">02</span><h2>Condições das cartas</h2></div>
           <label class="check"><input type="checkbox" id="multiple"> Mais de uma carta</label>
           <p class="hint">As parcelas começam juntas. Ao terminar um prazo, o pagamento mensal diminui.</p>
           <div id="cards"></div><button type="button" class="secondary" id="add-card" hidden>+ Adicionar carta</button>
         </section>
-        <section class="panel"><div class="section-title"><span class="number">03</span><h2>Comparativo com financiamento</h2></div>
+        <section class="panel" data-full-model><div class="section-title"><span class="number">03</span><h2>Comparativo com financiamento</h2></div>
           <label class="check"><input id="compare" type="checkbox" checked> Incluir comparação no PDF</label>
           <p class="hint">Mesmo valor do bem, entrada e prazo da carta. Referências editáveis; não representam uma proposta aprovada.</p>
           <details id="assumptions"><summary>Ajustar taxas e encargos</summary>
@@ -56,7 +58,7 @@
           </details>
         </section>
       </div>
-      <aside><section class="preview"><p class="eyebrow">RESUMO DA PROPOSTA</p><h2 id="preview-client">Seu cliente</h2><p class="credit-label">Crédito disponível</p><p class="big" id="preview-credit">R$ 0,00</p><div class="summary-line"><span>Entrada</span><strong id="preview-entry">R$ 0,00</strong></div><div class="summary-line"><span>Transferência</span><strong id="preview-transfer">R$ 0,00</strong></div><div class="divider"></div><h3>Pagamento mensal</h3><div id="preview-stages"><p class="hint">Preencha as condições ao lado.</p></div><div class="divider"></div><div class="summary-line"><span>Prazo restante</span><strong id="preview-term">—</strong></div><div class="summary-line"><span>Saldo das parcelas</span><strong id="preview-debt">R$ 0,00</strong></div><div class="summary-total"><span>Total nominal atual</span><strong id="preview-total">R$ 0,00</strong></div><button type="submit" id="generate">Baixar proposta em PDF <span aria-hidden="true">↓</span></button><p id="status" role="status" aria-live="polite"></p></section><p class="local-note">Os dados preenchidos são processados neste navegador. Nenhum cadastro de cliente é enviado ou salvo pelo gerador.</p></aside>
+      <aside><section class="preview"><p class="eyebrow" id="preview-model">PROPOSTA COMPLETA</p><h2 id="preview-client">Seu cliente</h2><p class="credit-label">Crédito disponível</p><p class="big" id="preview-credit">R$ 0,00</p><div class="summary-line"><span>Entrada</span><strong id="preview-entry">R$ 0,00</strong></div><div class="summary-line" data-full-model><span>Transferência</span><strong id="preview-transfer">R$ 0,00</strong></div><div class="divider"></div><h3>Pagamento mensal</h3><div id="preview-stages"><p class="hint">Preencha as condições ao lado.</p></div><div data-full-model><div class="divider"></div><div class="summary-line"><span>Prazo restante</span><strong id="preview-term">—</strong></div><div class="summary-line"><span>Saldo das parcelas</span><strong id="preview-debt">R$ 0,00</strong></div><div class="summary-total"><span>Total nominal atual</span><strong id="preview-total">R$ 0,00</strong></div></div><button type="submit" id="generate">Baixar proposta em PDF <span aria-hidden="true">↓</span></button><p id="status" role="status" aria-live="polite"></p></section><p class="local-note">Os dados preenchidos são processados neste navegador. Nenhum cadastro de cliente é enviado ou salvo pelo gerador.</p></aside>
       </div>
     </form>
     <footer>CRISTAL CONSÓRCIOS <span>Brasília · (61) 3328-3000</span></footer>
@@ -64,7 +66,7 @@
   <template id="card-template"><fieldset class="card"><legend>Carta <span class="card-index"></span></legend><button type="button" class="remove" aria-label="Remover carta">Remover</button><div class="grid">
     <label class="wide">Administradora<input data-field="administrator" maxlength="45" placeholder="Ex.: Caixa, Itaú, Porto" required></label>
     <label>Crédito (R$)<input data-field="credit" inputmode="decimal" placeholder="0,00" required></label><label>Entrada (R$)<input data-field="entry" inputmode="decimal" placeholder="0,00" required></label>
-    <label>Transferência<select data-field="transferMode"><option value="percent">Percentual do crédito (%)</option><option value="fixed">Valor fixo (R$)</option></select></label><label><span data-transfer-label>Transferência (%)</span><input data-field="transferInput" inputmode="decimal" value="1" required></label>
+    <label data-full-model>Transferência<select data-field="transferMode"><option value="percent">Percentual do crédito (%)</option><option value="fixed">Valor fixo (R$)</option></select></label><label data-full-model><span data-transfer-label>Transferência (%)</span><input data-field="transferInput" inputmode="decimal" value="1" required></label>
     <label>Parcelas restantes<input data-field="months" type="number" min="1" max="420" step="1" placeholder="Ex.: 120" required></label><label>Valor da parcela (R$)<input data-field="payment" inputmode="decimal" placeholder="0,00" required></label>
   </div></fieldset></template>
 </body></html>

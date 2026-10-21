@@ -6,7 +6,9 @@ Rota direta `/propostas/`, sem links na navegação pública ou sitemap. A pági
 
 Preencher cliente, data e tipo. Uma carta é o padrão. “Mais de uma carta” permite até quatro, cada uma com crédito, entrada, administradora, transferência em percentual ou reais, prazo e parcela. Todos os fluxos iniciam juntos. O resumo e o PDF somam crédito, entrada, transferência e parcelas; prazos iguais são agrupados. O PDF mostra pagamentos mensais por período sem identificar a quantidade de cartas.
 
-O botão baixa um PDF A4 com nome do cliente, crédito e data. Sem comparativo: uma página. Com comparativo: duas. Não há gravação nem URL compartilhável contendo dados pessoais. O exemplo é fictício e seu carregamento não substitui campos já preenchidos.
+O seletor **Modelo da proposta** oferece duas opções. **Completo** mantém prazo total, transferência, desembolso inicial, saldo das parcelas e total nominal, com comparação financeira opcional. **Resumido** mostra identificação do cliente, data, administradora, crédito, entrada e parcelas por período; omite transferência, totais e comparação financeira. A troca de modelo preserva as condições já digitadas, incluindo os campos usados apenas no completo.
+
+O botão baixa um PDF A4 com nome do cliente, crédito e data. Resumido e completo sem comparativo: uma página. Completo com comparativo: duas. O arquivo resumido tem prefixo `Proposta Resumida`. Não há gravação nem URL compartilhável contendo dados pessoais. O exemplo é fictício e seu carregamento não substitui campos já preenchidos.
 
 ## Comparativo: limites e fontes
 

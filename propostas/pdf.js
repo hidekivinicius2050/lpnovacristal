@@ -6,7 +6,8 @@
     const E=root.ProposalEngine, m=E.money, s=data.summary;
     const doc=new root.jspdf.jsPDF({unit:'pt',format:'a4',compress:true});
     const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),L=42,R=W-42,BW=R-L;
-    const count=data.banks.length ? 2 : 1;
+    const resumida=data.model==='resumida',hasComparison=!resumida&&data.banks.length>0;
+    const count=hasComparison ? 2 : 1;
     const date=new Date(data.date+'T12:00:00');
     const dateLabel=date.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
     const clean=value=>String(value).replace(/[\u0000-\u001f\u007f]/g,' ').trim();
@@ -46,14 +47,18 @@
       text(L+15,top+(compact?29:36),`${stage.months} parcelas mensais`,8,C.muted);
       text(R-15,top+(compact?25:31),m(stage.payment),compact?17:20,C.navy,true,'right');
     });
-    let y=468+s.stages.length*(height+gap)+(compact?13:21);
-    text(L,y,'Prazo total restante',10,C.muted);text(R,y,`${s.months} meses`,11,C.ink,true,'right');
-    y+=compact?18:23;text(L,y,'Taxa de transferência estimada',9.5,C.muted);text(R,y,m(s.transfer),9.5,C.muted,false,'right');
-    y+=compact?18:23;text(L,y,'Desembolso inicial: entrada + transferência',10,C.muted);text(R,y,m(s.upfront),11,C.ink,true,'right');
-    y+=compact?18:23;text(L,y,'Soma das parcelas pelos valores atuais',10,C.muted);text(R,y,m(s.debt),11,C.ink,true,'right');
-    y+=compact?12:18;box(L,y,BW,44,C.navy);text(L+14,y+26,'TOTAL NOMINAL DO CENÁRIO',9,C.white,true);text(R-14,y+30,m(s.total),20,C.white,true,'right');
-    paragraph('Valores sujeitos à disponibilidade e reajustes contratuais. Transferência estimada, a confirmar com a administradora.',Math.max(y+63,746),8.5,12);
-    if(data.banks.length) {
+    if(!resumida) {
+      let y=468+s.stages.length*(height+gap)+(compact?13:21);
+      text(L,y,'Prazo total restante',10,C.muted);text(R,y,`${s.months} meses`,11,C.ink,true,'right');
+      y+=compact?18:23;text(L,y,'Taxa de transferência estimada',9.5,C.muted);text(R,y,m(s.transfer),9.5,C.muted,false,'right');
+      y+=compact?18:23;text(L,y,'Desembolso inicial: entrada + transferência',10,C.muted);text(R,y,m(s.upfront),11,C.ink,true,'right');
+      y+=compact?18:23;text(L,y,'Soma das parcelas pelos valores atuais',10,C.muted);text(R,y,m(s.debt),11,C.ink,true,'right');
+      y+=compact?12:18;box(L,y,BW,44,C.navy);text(L+14,y+26,'TOTAL NOMINAL DO CENÁRIO',9,C.white,true);text(R-14,y+30,m(s.total),20,C.white,true,'right');
+      paragraph('Valores sujeitos à disponibilidade e reajustes contratuais. Transferência estimada, a confirmar com a administradora.',Math.max(y+63,746),8.5,12);
+    } else {
+      paragraph('Valores sujeitos à disponibilidade e reajustes contratuais.',746,8.5,12);
+    }
+    if(hasComparison) {
       doc.addPage();header(2,'Comparativo financeiro ilustrativo');text(L,171,'Carta ou financiamento?',23,C.navy,true);
       paragraph(`Mesmo bem: ${m(s.credit)}. Entrada: ${m(s.entry)}. Prazo: ${s.months} meses.`,195,9.5,14);
       paragraph(`Financiamento de ${m(s.credit-s.entry)} pelo ${data.asset==='imovel'?'SAC. Perfil técnico de 40 anos.':'sistema Price.'}`,213,9.5,14);
@@ -115,7 +120,7 @@
     doc.setProperties({title:`Proposta - ${data.client} - ${m(s.credit)} - ${date.toLocaleDateString('pt-BR')}`,author:'Cristal Consórcios',subject:'Proposta de carta contemplada'});
     const safe=clean(data.client).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9 -]/g,'').replace(/\s+/g,' ').slice(0,65)||'Cliente';
     const fileDate=data.date.split('-').reverse().join('-');
-    return {doc,filename:`Proposta - ${safe} - Credito ${s.credit.toFixed(2).replace('.',',')} - ${fileDate}.pdf`};
+    return {doc,filename:`Proposta${resumida?' Resumida':''} - ${safe} - Credito ${s.credit.toFixed(2).replace('.',',')} - ${fileDate}.pdf`};
   }
   root.makeProposalPDF=makeProposalPDF;
 })(globalThis);

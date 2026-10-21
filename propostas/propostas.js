@@ -12,7 +12,7 @@
     if(cards.children.length>=4)return;
     const card=$('card-template').content.firstElementChild.cloneNode(true);
     for(const [key,value] of Object.entries(values))card.querySelector(`[data-field="${key}"]`).value=value;
-    card.querySelector('.remove').addEventListener('click',()=>{card.remove();renumber();preview();});cards.append(card);renumber();return card;
+    card.querySelector('.remove').addEventListener('click',()=>{card.remove();renumber();preview();});cards.append(card);renumber();modelChanged();return card;
   }
   function renumber() {
     [...cards.children].forEach((card,i)=>{card.querySelector('.card-index').textContent=i+1;card.querySelector('.remove').hidden=cards.children.length===1;card.querySelector('.remove').setAttribute('aria-label',`Remover carta ${i+1}`);});
@@ -22,7 +22,7 @@
     return [...cards.children].map(card=>{
       const v=k=>card.querySelector(`[data-field="${k}"]`).value;
       const credit=E.number(v('credit')),transferValue=E.number(v('transferInput'));
-      const transfer=v('transferMode')==='percent'?E.round(credit*transferValue/100):transferValue;
+      const transfer=$('model').value==='resumida'?0:v('transferMode')==='percent'?E.round(credit*transferValue/100):transferValue;
       return {administrator:v('administrator'),credit:E.round(credit),entry:E.round(E.number(v('entry'))),transfer,payment:E.round(E.number(v('payment'))),months:Number(v('months'))};
     });
   }
@@ -39,6 +39,13 @@
     }
   }
   function assetChanged() {$('property-settings').hidden=$('asset').value!=='imovel';$('vehicle-settings').hidden=$('asset').value!=='veiculo';}
+  function modelChanged() {
+    const resumida=$('model').value==='resumida';
+    document.querySelectorAll('[data-full-model]').forEach(element=>{element.hidden=resumida;});
+    $('preview-model').textContent=resumida?'PROPOSTA RESUMIDA':'PROPOSTA COMPLETA';
+    $('model-description').textContent=resumida?'Mostra cliente, administradora, crédito, entrada e parcelas. Sem resumo de totais ou comparação com financiamento.':'Inclui prazo total, transferência, desembolso inicial e totais. A comparação com financiamento é opcional.';
+  }
+  $('model').addEventListener('change',()=>{modelChanged();status('');});
   $('asset').addEventListener('change',assetChanged);
   $('multiple').addEventListener('change',()=>{
     // Never silently discard conditions already entered.
@@ -67,9 +74,9 @@
       const client=$('client').value.trim(),date=$('date').value;
       if(!client){$('client').focus();throw Error('Preencha o nome do cliente.');}
       if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00'))){$('date').focus();throw Error('Informe uma data válida.');}
-      const summary=E.consolidate(readCards()),asset=$('asset').value;
+      const summary=E.consolidate(readCards()),asset=$('asset').value,model=$('model').value;
       let config={},edited=false,banks=[];
-      if($('compare').checked){
+      if(model!=='resumida'&&$('compare').checked){
         if(summary.entry>=summary.credit)throw Error('Para comparar com financiamento, a entrada deve ser menor que o crédito.');
         ({config,edited}=settings());
         const common={principal:E.round(summary.credit-summary.entry),property:summary.credit,months:summary.months};
@@ -77,7 +84,7 @@
         else banks=[{name:'Mercado (BCB)',rateLabel:config['vehicle-rate'].toLocaleString('pt-BR')+'% a.m.',...E.bank({...common,monthly:config['vehicle-rate'],fee:config['vehicle-fee'],system:'Price'})}];
       }
       $('generate').disabled=true;status('Gerando o PDF…');
-      const data={client,date,summary,asset,banks,config,edited,reference:$('custom-reference').value.trim()};
+      const data={client,date,summary,asset,model,banks,config,edited,reference:$('custom-reference').value.trim()};
       const {doc,filename}=await makeProposalPDF(data,await loadLogo());
       await doc.save(filename,{returnPromise:true});status('PDF gerado. Confira os downloads do navegador.');
     } catch(error){status(error.message||'Não foi possível gerar o PDF. Tente novamente.',true);}
