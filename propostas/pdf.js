@@ -37,8 +37,7 @@
     text(L,217,`Administradora: ${s.administrators}`,9,C.muted,false,'left',BW);
     box(L,233,BW,78);text(L+18,255,'CRÉDITO DISPONÍVEL',9,C.muted,true);text(L+18,294,m(s.credit),30,C.navy,true);
     text(L,338,'ENTRADA DA CARTA',9,C.muted,true);text(L,365,m(s.entry),22,C.navy,true);
-    text(L+280,338,'TRANSFERÊNCIA ESTIMADA',9,C.muted,true);text(L+280,365,m(s.transfer),22,C.navy,true);
-    text(L+280,384,'Conforme condições informadas',8.5,C.muted);rule(400);
+    text(L,386,`Taxa de transferência estimada: ${m(s.transfer)}`,9.5,C.muted);rule(400);
     text(L,430,'Como ficam seus pagamentos',15,C.navy,true);text(L,450,'Pagamento mensal total em cada período.',9,C.muted);
     const compact=s.stages.length>2, height=compact?36:47,gap=compact?7:9;
     s.stages.forEach((stage,i)=>{
