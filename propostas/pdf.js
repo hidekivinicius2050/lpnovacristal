@@ -37,9 +37,9 @@
     text(L,217,`Administradora: ${s.administrators}`,9,C.muted,false,'left',BW);
     box(L,233,BW,78);text(L+18,255,'CRÉDITO DISPONÍVEL',9,C.muted,true);text(L+18,294,m(s.credit),30,C.navy,true);
     text(L,338,'ENTRADA DA CARTA',9,C.muted,true);text(L,365,m(s.entry),22,C.navy,true);
-    text(L,386,`Taxa de transferência estimada: ${m(s.transfer)}`,9.5,C.muted);rule(400);
+    rule(400);
     text(L,430,'Como ficam seus pagamentos',15,C.navy,true);text(L,450,'Pagamento mensal total em cada período.',9,C.muted);
-    const compact=s.stages.length>2, height=compact?36:47,gap=compact?7:9;
+    const compact=s.stages.length>2, height=s.stages.length===4?33:compact?36:47,gap=s.stages.length===4?6:compact?7:9;
     s.stages.forEach((stage,i)=>{
       const top=468+i*(height+gap);box(L,top,BW,height);
       text(L+15,top+(compact?15:19),`DO ${stage.start}º AO ${stage.end}º MÊS`,9,C.navy,true);
@@ -48,6 +48,7 @@
     });
     let y=468+s.stages.length*(height+gap)+(compact?13:21);
     text(L,y,'Prazo total restante',10,C.muted);text(R,y,`${s.months} meses`,11,C.ink,true,'right');
+    y+=compact?18:23;text(L,y,'Taxa de transferência estimada',9.5,C.muted);text(R,y,m(s.transfer),9.5,C.muted,false,'right');
     y+=compact?18:23;text(L,y,'Desembolso inicial: entrada + transferência',10,C.muted);text(R,y,m(s.upfront),11,C.ink,true,'right');
     y+=compact?18:23;text(L,y,'Soma das parcelas pelos valores atuais',10,C.muted);text(R,y,m(s.debt),11,C.ink,true,'right');
     y+=compact?12:18;box(L,y,BW,44,C.navy);text(L+14,y+26,'TOTAL NOMINAL DO CENÁRIO',9,C.white,true);text(R-14,y+30,m(s.total),20,C.white,true,'right');
