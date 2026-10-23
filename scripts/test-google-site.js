@@ -20,6 +20,8 @@ for(const route of urls){
 }
 const sitemap=read('sitemap.xml');assert.equal((sitemap.match(/<url>/g)||[]).length,17);assert.ok(!/\/(quiz|agradecimento|propostas)\//.test(sitemap));
 const capture=read('lead-capture.js');assert.ok(capture.includes("(quiz|agradecimento|propostas)"));assert.ok(!/lead_nome|lead_whatsapp/.test(capture));assert.ok(capture.includes('result.saved!==true'));assert.ok(capture.includes('location.assign('));assert.ok(!capture.includes('window.open('));
-assert.ok(read('lead-config.js').includes('gtmEnabled: false'));assert.ok(!read('lead-config.js').includes('GTM-K3R4J649'));
+const configContext={window:{}};require('node:vm').runInNewContext(read('lead-config.js'),configContext);const config=configContext.window.CristalLeadConfig;
+assert.equal(config.gtmEnabled,false);assert.equal(config.gtmContainerId,'GTM-K3R4J649');
+assert.equal(config.events.view,'open_form');assert.equal(config.events.start,'form_start');assert.equal(config.events.saved,'form_submit');assert.equal(config.formParameter,'form_name');
 assert.ok(!read('vercel.json').includes('redirects'));
 console.log(`PASS: ${paths.length} protected files match base (text CRLF normalized, binary SHA-256 exact); ${urls.length} public pages, metadata, FAQ/schema, filtered routes, safe tracking configuration and no production/.com redirects.`);

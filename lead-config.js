@@ -2,10 +2,11 @@
 window.CristalLeadConfig = Object.freeze({
   endpoint: '/api/leads',
   whatsapp: '556133283000',
-  // Found on the old Cristal site. Activation/events still await the Google owner's review.
-  gtmContainerId: 'GTM-WLHD5Q2F',
+  // User relayed the Google owner's instruction to use Contêiner Padrão.json.
+  // Its container is GTM-K3R4J649; activation awaits tag review and preview validation.
+  gtmContainerId: 'GTM-K3R4J649',
   gtmEnabled: false,
   trackingHosts: Object.freeze(['www.cristalconsorcios.com.br']),
-  events: Object.freeze({ view: 'form_visto', start: 'form_iniciado', saved: 'lead_enviado' }),
-  formParameter: 'form_nome'
+  events: Object.freeze({ view: 'open_form', start: 'form_start', saved: 'form_submit' }),
+  formParameter: 'form_name'
 });
