@@ -20,4 +20,4 @@ http.createServer(async(req,res)=>{
  if(fs.existsSync(target)&&fs.statSync(target).isDirectory())target=path.join(target,'index.html');
  const exists=fs.existsSync(target)&&fs.statSync(target).isFile();if(!exists)target=path.join(root,'404.html');
  res.writeHead(exists?200:404,{'Content-Type':types[path.extname(target)]||'application/octet-stream'});fs.createReadStream(target).pipe(res);
-}).listen(port,'127.0.0.1',()=>console.log(`Review: http://127.0.0.1:${port} | Leads: ${simulate?'SIMULATED; no external CRM requests':'real adapter; missing bindings fail closed'}`));
+}).listen(port,'127.0.0.1',()=>console.log(`Review: http://127.0.0.1:${port} | Leads: ${simulate?'SIMULATED; no external requests':'Apps Script adapter only; missing bindings fail closed'}`));

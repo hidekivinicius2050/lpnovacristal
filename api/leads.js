@@ -1,6 +1,5 @@
 'use strict';
 const crypto=require('node:crypto');
-const CRM='https://api.crm.alphavillesystems.com.br/api/webhook/integration/6057';
 const APPS='https://script.google.com/macros/s/AKfycbzk_wG9H6G0YHeQgFPFLvS-emVFiAL-Z8WCl4xPiSulF97123r5aFhop85ky90ktjAY/exec';
 const TTL=7*86400;
 class RedisJournal {
@@ -54,11 +53,11 @@ function createHandler({env=process.env,journal=null,send=post}={}){
       acquired=Boolean(await store.set(lock,true,45,true));if(!acquired)return reply(409,{saved:false,code:'SUBMISSION_IN_PROGRESS'});
       const fingerprint=hash(JSON.stringify(lead));let state=await store.get(key);
       if(state&&state.hash!==fingerprint)return reply(409,{saved:false,code:'REQUEST_CONFLICT'});
-      if(!state)state={hash:fingerprint,crm:'pending',apps:'pending'};
-      if(state.crm==='saved'&&state.apps==='saved')return reply(200,{saved:true,id:lead.id,duplicate:true});
-      if(['sending','unknown'].some(s=>state.crm===s||state.apps===s))return reply(409,{saved:false,code:'REVIEW_REQUIRED'});
-      const crmPayload={...lead,name:lead.nome,phone:lead.telefone,subject:lead.interesse,origin:'Site',source:'Integração',funnel:env.CRISTAL_CRM_FUNNEL||'NOVO LEAD',tags:['Site Cristal'],external_id:lead.id};
-      for(const [target,url,payload] of [['crm',CRM,crmPayload],['apps',APPS,lead]]){
+      if(!state)state={hash:fingerprint,apps:'pending'};
+      if(state.apps==='saved')return reply(200,{saved:true,id:lead.id,duplicate:true});
+      if(['sending','unknown'].includes(state.apps))return reply(409,{saved:false,code:'REVIEW_REQUIRED'});
+      // The Facebook CRM belongs exclusively to the protected quiz flow.
+      for(const [target,url,payload] of [['apps',APPS,lead]]){
         if(state[target]==='saved')continue;
         // Persist before contacting the provider. An ambiguous result is never blindly retried.
         state[target]='sending';await store.set(key,state);

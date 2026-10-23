@@ -108,7 +108,7 @@
       const specific=leadContext?.credit?`na carta de ${leadContext.type==='veiculo'?'veículo':'imóvel'} da ${leadContext.admin}, de ${leadContext.credit}`:interest.toLowerCase();
       const message=`Olá, meu nome é ${cleanName}. Conheci a Cristal através do ${get('utm_source')||'site'} e tenho interesse em ${specific}.`+(leadContext?.summary?'\n\n'+leadContext.summary:'');
       feedback.textContent='Contato salvo. Abrindo o WhatsApp…';
-      // Same-tab navigation only after both destinations have acknowledged storage.
+      // Same-tab navigation only after the site's Apps Script has acknowledged storage.
       const destination='https://wa.me/'+config.whatsapp+'?text='+encodeURIComponent(message);
       // Give configured tags a bounded chance to flush without adding PII to dataLayer.
       await new Promise(resolve=>{

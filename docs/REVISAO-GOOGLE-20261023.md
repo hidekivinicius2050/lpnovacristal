@@ -4,14 +4,14 @@
 
 Implementação local na branch `revisao-site-google-20261023`, a partir de `33376dc`. Não houve push, merge, deploy, alteração de domínio ou DNS. A produção continua independente desta revisão.
 
-O contêiner `GTM-WLHD5Q2F` foi encontrado no HTML público do site antigo. Sua ativação continua pendente da confirmação do responsável pelo Google. `lead-config.js` mantém `gtmEnabled: false`. O JSON recebido identifica `GTM-K3R4J649` e outro negócio; não foi importado.
+O contêiner `GTM-WLHD5Q2F` foi encontrado no HTML público do site antigo. Sua ativação continua pendente da confirmação do responsável pelo Google. `lead-config.js` mantém `gtmEnabled: false`. O JSON recebido identifica `GTM-K3R4J649` e outro negócio; não foi importado. Correção de escopo confirmada pelo usuário: o CRM pertence exclusivamente ao Facebook/quiz e não recebe leads do formulário do Google.
 
 ## Alterações para revisar
 
 - Home com título, descrição, H1, primeiro parágrafo e H2 sobre carta contemplada em Brasília. Visual e imagens existentes preservados.
 - Páginas `/carta-contemplada-imovel/` e `/carta-contemplada-veiculo/`, com catálogo fixado no respectivo tipo, filtros existentes e metadados próprios.
 - CTAs comerciais abrem um formulário de nome e WhatsApp; o campo de interesse aparece apenas quando o tipo não está definido. O contexto da carta acompanha o contato. Os resultados dos simuladores mantêm o resumo do cenário, sem alterar seus motores.
-- O formulário envia para `/api/leads`. O WhatsApp abre na mesma aba somente após confirmação positiva dos dois destinos existentes: CRM e Apps Script. Falhas mantêm os campos preenchidos e não geram conversão de sucesso.
+- O formulário envia para `/api/leads`, que usa somente o Apps Script da planilha já existente no site principal. O CRM do Facebook não é chamado. O WhatsApp abre na mesma aba somente após confirmação positiva do cadastro. Falhas mantêm os campos preenchidos e não geram conversão de sucesso.
 - Identificador de tentativa, bloqueio de envios simultâneos e registro durável por destino evitam reenvios automáticos quando um provedor já confirmou o cadastro. Resposta incerta exige conferência, em vez de tentar novamente às cegas.
 - UTMs, inclusive `utm_content`, e identificadores de clique acompanham o cadastro. Landing page e referrer são guardados sem query string. Os eventos comuns do formulário não levam nome, telefone, resumo financeiro ou identificadores de contato.
 - Eventos preparados: `form_visto`, `form_iniciado` e `lead_enviado`, com `form_nome` e `page_type`. O JSON recebido usa outros nomes (`open_form`, `form_start`, `form_submit`, `form_name`); o responsável deve validar o contrato de eventos antes de ativar o GTM.
@@ -38,7 +38,7 @@ Nenhuma regra do domínio `.com`, redirect, migração ou mudança de DNS foi ac
 
 ## Verificações realizadas
 
-- `node scripts/test-lead-api.js`: validação, contexto e atribuição, duas confirmações, reenvio parcial, duplicidade, concorrência, quarentena de resposta incerta e falta de configuração. Nenhum lead real enviado.
+- `node scripts/test-lead-api.js`: validação, contexto e atribuição, destino exclusivo Apps Script, reenvio após rejeição explícita, duplicidade, concorrência, quarentena de resposta incerta e falta de configuração. Nenhum lead real enviado.
 - `node scripts/validate-content.js`: 10 artigos e 18 HTMLs, dados cadastrais, links locais, metadados, schema e sitemap.
 - `node scripts/test-google-site.js`: preservação dos 24 arquivos, 17 rotas públicas, canonical, FAQ/schema, rotas por tipo e GTM desativado.
 - Testes existentes `scripts/test-simulator.js` e `scripts/test-leverage-simulator.js`: passaram; alavancagem com 31/31 cenários.
@@ -52,7 +52,7 @@ Nenhuma regra do domínio `.com`, redirect, migração ou mudança de DNS foi ac
 
 1. Confirmar com o responsável o contêiner e o contrato de eventos/tags. Os IDs de GA4/Ads do JSON de outro negócio não podem ser reaproveitados. Ativação depende de `gtmEnabled` e dos hosts autorizados em `lead-config.js`.
 2. Configurar armazenamento durável compatível com Redis REST no hosting, pelas variáveis secretas `KV_REST_API_URL` e `KV_REST_API_TOKEN`. Nenhum recurso foi provisionado. Sem essas variáveis, a API responde 503 e não libera o WhatsApp. Não inserir credenciais em chat, código ou Git.
-3. Fazer um envio real autorizado em ambiente de revisão: conferir CRM e Apps Script, formato de confirmação, contexto, UTMs e IDs de clique. Os testes atuais simulam as respostas; não demonstram que os provedores reais aceitam ou guardam todos os campos. Confirmar também o funil `NOVO LEAD` e a identificação `Site Cristal`, sem reutilizar automações de Quiz.
+3. Fazer um envio real autorizado em ambiente de revisão: conferir somente a planilha/Apps Script do site principal, formato de confirmação, contexto, UTMs e IDs de clique. Os testes atuais simulam a resposta; não demonstram que o destino real aceita ou guarda todos os campos. Não é necessário envolver o CRM do Facebook, seu funil ou suas automações para testar o formulário do Google.
 4. Em resposta incerta (`REVIEW_REQUIRED`), conferir o cadastro nos destinos antes de resolver o registro técnico da tentativa. Não apagar o registro e reenviar sem essa conferência.
 5. Validar Tag Assistant, GA4 DebugView e conversão do Google Ads no ambiente de revisão. Exportação/importação de conversões offline e conversões avançadas dependem da integração externa e não foram ativadas. Nome/telefone não são enviados nos eventos comuns de análise.
 6. Executar Lighthouse mobile e Rich Results Test no preview hospedado. Não há pontuação externa comprovada nesta entrega; o schema foi analisado localmente. Conferir também teclado e envio em celular físico.
@@ -70,7 +70,7 @@ $env:CRISTAL_PREVIEW_SIMULATE='1'
 & "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe" scripts/serve-review.js
 ```
 
-Abra `http://127.0.0.1:4187/`. Para revisar falha, use também `$env:CRISTAL_PREVIEW_OUTCOME='failure'` antes de iniciar. Esse modo é exclusivo do servidor local: não envia contatos ao CRM/Apps Script. Use apenas dados fictícios; o sucesso abre a página do WhatsApp com a mensagem preparada, sem enviá-la. Encerre com Ctrl+C. Os servidores usados nos testes foram encerrados ao concluir a revisão.
+Abra `http://127.0.0.1:4187/`. Para revisar falha, use também `$env:CRISTAL_PREVIEW_OUTCOME='failure'` antes de iniciar. Esse modo é exclusivo do servidor local: não envia contatos a serviços externos. Use apenas dados fictícios; o sucesso abre a página do WhatsApp com a mensagem preparada, sem enviá-la. Encerre com Ctrl+C. Os servidores usados nos testes foram encerrados ao concluir a revisão.
 
 ## Referências utilizadas
 
