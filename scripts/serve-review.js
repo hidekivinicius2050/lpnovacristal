@@ -8,7 +8,7 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=
 http.createServer(async(req,res)=>{
  const url=new URL(req.url,'http://127.0.0.1:'+port);
  if(simulate&&url.pathname==='/lead-config.js'){
-  res.writeHead(200,{'Content-Type':'text/javascript; charset=utf-8'});res.end(fs.readFileSync(path.join(root,'lead-config.js'),'utf8')+'\nwindow.CristalLeadConfig=Object.freeze({...window.CristalLeadConfig,debug:true});');return;
+  res.writeHead(200,{'Content-Type':'text/javascript; charset=utf-8'});res.end(fs.readFileSync(path.join(root,'lead-config.js'),'utf8')+'\nwindow.CristalLeadConfig=Object.freeze({...window.CristalLeadConfig,debug:true,previewConsent:true});');return;
  }
  if(url.pathname==='/api/leads'){
   let body='';for await(const chunk of req){body+=chunk;if(body.length>12000){res.writeHead(413).end();return;}}

@@ -14,11 +14,6 @@
   const params=new URLSearchParams(location.search);
   keys.forEach(key=>{if(params.has(key))put(key,params.get(key).slice(0,500));});
   if(!get('captured')){if(!get('landing_page'))put('landing_page',cleanURL(location.href));put('referrer',cleanURL(document.referrer));put('captured','1');}
-  if(config.gtmEnabled===true&&(config.trackingHosts||[]).includes(location.hostname)&&/^GTM-[A-Z0-9]+$/.test(config.gtmContainerId)) {
-    window.dataLayer.push({'gtm.start':Date.now(),event:'gtm.js'});
-    const script=document.createElement('script');script.async=true;
-    script.src='https://www.googletagmanager.com/gtm.js?id='+config.gtmContainerId;document.head.append(script);
-  }
   function event(kind,source,callback){
     // Deliberately no names, phone numbers, contact IDs, URL queries or free text.
     const payload={event:config.events[kind],[config.formParameter]:pageType+':'+source,page_type:pageType};
