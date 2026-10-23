@@ -6,7 +6,6 @@
 
 const CRISTAL = {
   whatsapp: "556133283000",
-  leadsEndpoint: "https://script.google.com/macros/s/AKfycbzk_wG9H6G0YHeQgFPFLvS-emVFiAL-Z8WCl4xPiSulF97123r5aFhop85ky90ktjAY/exec",
   catalogueUrl: "/data/cartas.json"
 };
 
@@ -55,7 +54,7 @@ const ACTION_ICON_IDS = Object.freeze({
 });
 
 let allLetters = [];
-let selectedCategory = "todos";
+let selectedCategory = document.body.dataset.catalogueType || "todos";
 let activeLetters = [];
 let visibleLetters = 6;
 let lastSimulation = null;
@@ -268,7 +267,7 @@ async function loadPortfolio() {
     dom.cards.innerHTML = `
       <div class="catalogue-error">
         <p>Não foi possível carregar o portfólio neste momento.</p>
-        <a class="text-link" href="${whatsappLink("Olá, não consegui ver as cartas disponíveis no site. Poderia me ajudar?")}" target="_blank" rel="noopener">Falar com um especialista ${actionIcon("right")}</a>
+        <a class="text-link" href="#atendimento" data-cta-popup data-cta-source="catalogo-indisponivel">Falar com um especialista ${actionIcon("right")}</a>
       </div>`;
     dom.status.innerHTML = "<span></span> Consulte a equipe";
   } finally {
@@ -353,7 +352,7 @@ function letterCard(letter, index) {
         </div>
         <p class="letter-observation">${escapeHTML(letter.observation)}</p>
       </div>
-      <button class="letter-action" type="button" data-letter-index="${index}" aria-label="Ver detalhes da carta de ${escapeHTML(letter.admin)} no valor de ${escapeHTML(letter.credit)}">
+      <button class="letter-action" type="button" data-letter-index="${index}" aria-label="Ver detalhes e conversar sobre a carta de ${escapeHTML(letter.admin)} no valor de ${escapeHTML(letter.credit)}">
         Ver detalhes e conversar <span class="letter-action-icon" aria-hidden="true">${actionIcon("upRight")}</span>
       </button>
     </article>`;
@@ -400,10 +399,6 @@ function renderLetters() {
   dom.catalogueVisibleCount.textContent = `${displayedLetters.length} de ${activeLetters.length} oportunidades exibidas`;
 }
 
-function whatsappLink(message) {
-  return `https://wa.me/${CRISTAL.whatsapp}?text=${encodeURIComponent(message)}`;
-}
-
 function openLetter(index) {
   const letter = activeLetters[index];
   if (!letter) return;
@@ -419,8 +414,8 @@ function openLetter(index) {
     ["Valor da parcela", letter.installment],
     ["Observação", letter.observation]
   ].map(([label, value]) => `<div><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></div>`).join("");
-  const message = `Olá! Vi no site uma ${typeName.toLowerCase()} da ${letter.admin}, no valor de ${letter.credit}. Gostaria de receber mais informações.`;
-  dom.modalWhatsapp.href = whatsappLink(message);
+  dom.modalWhatsapp.href = "#atendimento";
+  window.CristalLead?.setContext(dom.modalWhatsapp, letter);
   dom.modal.showModal();
 }
 
@@ -429,6 +424,7 @@ function closeLetterModal() {
 }
 
 function setCategory(category) {
+  category = document.body.dataset.catalogueType || category;
   selectedCategory = category;
   dom.tabs.forEach((tab) => {
     const isActive = tab.dataset.category === category;
@@ -871,7 +867,7 @@ function resultActions(data) {
   const message = `Olá! Fiz ${context} no site para ${assetName}, no valor de ${formatCurrency(data.value)}${contribution}, em ${data.term} meses. Gostaria de falar com um especialista.`;
   return `
     <div class="result-cta">
-      <a class="button button-gold" href="${whatsappLink(message)}" target="_blank" rel="noopener">Falar com um especialista ${actionIcon("upRight")}</a>
+      <a class="button button-gold" href="#atendimento" data-cta-popup data-cta-source="simulacao" data-lead-asset="${data.asset}" data-lead-summary="${encodeURIComponent(message).replace(/'/g,'%27')}">Falar com um especialista ${actionIcon("upRight")}</a>
       <button class="button button-outline" type="button" id="simulation-view-all">Ver cartas disponíveis ${actionIcon("down")}</button>
       <button class="result-again" type="button" id="simulation-again">Comparar novamente</button>
     </div>`;
@@ -1073,60 +1069,6 @@ function setupCounterAnimation() {
   items.forEach((item) => observer.observe(item));
 }
 
-function setupLeadForm() {
-  const form = document.querySelector("#lead-form");
-  const feedback = document.querySelector("#form-feedback");
-  const phone = document.querySelector("#lead-phone");
-
-  phone.addEventListener("input", () => {
-    const digits = phone.value.replace(/\D/g, "").slice(0, 11);
-    if (digits.length <= 2) phone.value = digits ? `(${digits}` : "";
-    else if (digits.length <= 6) phone.value = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-    else if (digits.length <= 10) phone.value = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-    else phone.value = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  });
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    feedback.classList.remove("error");
-    if (!form.checkValidity()) {
-      feedback.textContent = "Preencha os campos obrigatórios para continuar.";
-      feedback.classList.add("error");
-      form.reportValidity();
-      return;
-    }
-
-    const data = new FormData(form);
-    const name = data.get("nome");
-    const interest = data.get("interesse");
-    const phoneValue = data.get("telefone");
-    const lead = {
-      nome: name,
-      telefone: phoneValue,
-      interesse: interest,
-      pagina: window.location.href,
-      origem: "site-cristal-novo",
-      data: new Date().toISOString()
-    };
-
-    // Mantém a mesma integração de leads utilizada no site atual.
-    if (CRISTAL.leadsEndpoint) {
-      fetch(CRISTAL.leadsEndpoint, {
-        method: "POST",
-        mode: "no-cors",
-        keepalive: true,
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(lead)
-      }).catch(() => {});
-    }
-
-    feedback.textContent = "Perfeito. Vamos abrir o WhatsApp para você falar com a equipe.";
-    const message = `Olá! Meu nome é ${name}. Tenho interesse em ${interest.toLowerCase()} e gostaria de receber orientação. Meu WhatsApp é ${phoneValue}.`;
-    window.setTimeout(() => window.open(whatsappLink(message), "_blank", "noopener"), 250);
-    form.reset();
-  });
-}
-
 function setupWhatsappFloatAvoidance() {
   const button = document.querySelector(".whatsapp-float");
   if (!button) return;
@@ -1218,10 +1160,10 @@ function init() {
   document.querySelector("#current-year").textContent = new Date().getFullYear();
   setupNavigation();
   setupCatalogueControls();
+  if (document.body.dataset.catalogueType) setCategory(document.body.dataset.catalogueType);
   setupSimulation();
   setupReveals();
   setupCounterAnimation();
-  setupLeadForm();
   setupCookies();
   setupModal();
   setupWhatsappFloatAvoidance();

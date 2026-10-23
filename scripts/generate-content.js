@@ -5,14 +5,15 @@ const path = require("node:path");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const CONTENT_ROOT = path.join(PROJECT_ROOT, "conteudo");
-const SITE_ORIGIN = (process.env.SITE_ORIGIN || "https://lpnovacristal.vercel.app").replace(/\/$/, "");
+const SITE_ORIGIN = (process.env.SITE_ORIGIN || "https://www.cristalconsorcios.com.br").replace(/\/$/, "");
 const UPDATED_ISO = "2026-09-15";
 const UPDATED_LABEL = "15 de setembro de 2026";
 const SIMULATOR_UPDATED_ISO = "2026-09-17";
-const WHATSAPP_URL = "https://wa.me/556133283000?text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20a%20Cristal%20Cons%C3%B3rcios.";
+const WHATSAPP_URL = "#atendimento";
 
 const articles = require(path.join(PROJECT_ROOT, "articles-data.js"));
 const company = require(path.join(PROJECT_ROOT, "company-data.js"));
+const { decorate } = require("./public-site");
 
 function escapeHtml(value) {
   return String(value)
@@ -126,7 +127,7 @@ function header(prefix, contentHref) {
           <a href="${contentHref}" aria-current="page">Conteúdo</a>
           <a href="${prefix}#contato">Contato</a>
         </nav>
-        <a class="button button-small button-light nav-cta" href="${WHATSAPP_URL}" target="_blank" rel="noopener">Falar com especialista ${icon("arrow-up-right")}</a>
+        <a class="button button-small button-light nav-cta" href="${WHATSAPP_URL}" data-cta-popup data-cta-source="cabecalho" target="_blank" rel="noopener">Falar com especialista ${icon("arrow-up-right")}</a>
       </div>
     </header>`;
 }
@@ -141,7 +142,7 @@ function footer(prefix, contentHref) {
       </div>
       <div class="shell footer-bottom"><span>© <span data-current-year>2026</span> Cristal Consórcios. Todos os direitos reservados.</span><span>Feito para decisões mais claras. ◇</span></div>
     </footer>
-    <a class="whatsapp-float" data-floating-whatsapp href="${WHATSAPP_URL}" target="_blank" rel="noopener" aria-label="Falar com a Cristal pelo WhatsApp"><span aria-hidden="true"><svg class="ui-icon ui-icon-whatsapp" viewBox="0 0 24 24" focusable="false"><use href="#icon-whatsapp"></use></svg></span><small>Fale com a Cristal</small></a>`;
+    <a class="whatsapp-float" data-floating-whatsapp href="${WHATSAPP_URL}" data-cta-popup data-cta-source="cabecalho" target="_blank" rel="noopener" aria-label="Falar com a Cristal pelo WhatsApp"><span aria-hidden="true"><svg class="ui-icon ui-icon-whatsapp" viewBox="0 0 24 24" focusable="false"><use href="#icon-whatsapp"></use></svg></span><small>Fale com a Cristal</small></a>`;
 }
 
 function articleCard(article, href, assetPrefix, options = {}) {
@@ -321,7 +322,7 @@ function renderArticle(article) {
   const related = article.related.map((slug) => articles.find((candidate) => candidate.slug === slug));
   const tocSections = article.sections.map((section, index) => ({ title: section.title, id: `${normalize(section.title)}-${index + 1}` }));
   if (article.callout) tocSections.push({ title: article.callout.title, id: "destaque-pratico" });
-  const ctaHref = article.cta.href.replace(/^\.\.\/index\.html/, "../../");
+  const ctaHref = "#atendimento";
 
   return `${head({
     title: `${article.title} | Cristal Consórcios`,
@@ -364,7 +365,7 @@ function renderArticle(article) {
             </div>
             <section class="hub-cta article-cta" data-whatsapp-avoid aria-labelledby="article-cta-title">
               <div><p class="content-kicker">${escapeHtml(article.cta.eyebrow)}</p><h2 id="article-cta-title">${escapeHtml(article.cta.title)}</h2><p>Use as informações como ponto de partida e confirme as condições específicas da cota, da administradora ou da instituição antes de decidir.</p></div>
-              <div class="hub-cta-actions"><a class="button button-gold" href="${escapeHtml(ctaHref)}">${escapeHtml(article.cta.label)} ${icon("arrow-right")}</a></div>
+              <div class="hub-cta-actions"><a class="button button-gold" href="${escapeHtml(ctaHref)}" data-cta-popup data-cta-source="artigo">${escapeHtml(article.cta.label)} ${icon("arrow-right")}</a></div>
             </section>
           </div>
         </div>
@@ -424,6 +425,7 @@ function validateArticles() {
 }
 
 function write(relativePath, content) {
+  if (relativePath.endsWith("index.html") || relativePath === "404.html") content = decorate(content, "/" + relativePath.replace(/index\.html$/, ""));
   const destination = path.join(PROJECT_ROOT, relativePath);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.writeFileSync(destination, `${content.trim()}\n`, "utf8");
@@ -450,3 +452,4 @@ write("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${SITE_ORIGIN}/sitemap.
 write("sitemap.xml", renderSitemap());
 
 console.log(`Conteúdo gerado: 1 hub, ${articles.length} artigos, 1 página 404, robots.txt e sitemap.xml.`);
+require('./prepare-google-site');

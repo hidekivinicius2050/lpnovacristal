@@ -13,6 +13,7 @@ const htmlFiles = [
   path.join(root, "404.html"),
   path.join(root, "simulador", "index.html"),
   path.join(root, "conteudo", "index.html"),
+  ...["carta-contemplada-imovel", "carta-contemplada-veiculo", "politica-de-privacidade", "termos-de-uso"].map(route => path.join(root, route, "index.html")),
   ...articles.map((article) => path.join(root, "conteudo", article.slug, "index.html"))
 ];
 
@@ -82,14 +83,14 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
     try {
       const parsed = JSON.parse(match[1]);
-      schemas.push(...(Array.isArray(parsed) ? parsed : [parsed]));
+      schemas.push(...(parsed["@graph"] || (Array.isArray(parsed) ? parsed : [parsed])));
     } catch (error) {
       fail(`${relative}: JSON-LD inválido (${error.message})`);
     }
   }
 
   if (!relative.endsWith("404.html")) {
-    const organization = schemas.find((item) => item && item["@type"] === "Organization");
+    const organization = schemas.find((item) => item && (item["@type"] === "Organization" || Array.isArray(item["@type"]) && item["@type"].includes("Organization")));
     if (!organization) {
       fail(`${relative}: schema Organization ausente`);
     } else {
@@ -130,7 +131,7 @@ if (!sitemap.includes("/simulador/")) fail("sitemap.xml: rota do simulador ausen
 for (const article of articles) {
   if (!sitemap.includes(`/conteudo/${article.slug}/`)) fail(`sitemap.xml: rota ausente para ${article.slug}`);
 }
-if ((sitemap.match(/<url>/g) || []).length !== articles.length + 3) fail("sitemap.xml: quantidade de URLs inesperada");
+if ((sitemap.match(/<url>/g) || []).length !== articles.length + 7) fail("sitemap.xml: quantidade de URLs inesperada");
 
 const simulatorHtml = read(path.join(root, "simulador", "index.html"));
 for (const id of [

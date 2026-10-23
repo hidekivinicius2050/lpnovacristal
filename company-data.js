@@ -8,6 +8,9 @@ module.exports = Object.freeze({
   email: "cristalconsorcios@gmail.com",
   phoneDisplay: "(61) 3328-3000",
   phoneE164: "+556133283000",
+  foundingDate: "1996",
+  founders: Object.freeze(["João Carlos Santos Barbosa", "Valdemir Amaral"]),
+  weekdayHours: Object.freeze({ opens: "08:00", closes: "18:00" }),
   mapUrl: "https://maps.app.goo.gl/f9FGs6sPTx4xFeF66",
   address: Object.freeze({
     streetAddress: "ST Setor Comercial Sul, Quadra 01, Bloco L, nº 17, Sala 208, Ed. Márcia",

@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /propostas/
 
-Sitemap: https://lpnovacristal.vercel.app/sitemap.xml
+Sitemap: https://www.cristalconsorcios.com.br/sitemap.xml
