@@ -9,7 +9,7 @@ const urls=['/','/carta-contemplada-imovel/','/carta-contemplada-veiculo/','/con
 for(const route of urls){
  const html=read(route==='/'?'index.html':route.slice(1)+'index.html');
  assert.ok(html.includes(`rel="canonical" href="${ORIGIN}${route}"`),route+' canonical');assert.ok(!html.includes('lpnovacristal.vercel.app'),route+' old origin');
- assert.ok(html.includes('/lead-capture.js'),route+' popup');assert.ok(html.includes('/tracking-consent.js'),route+' consent');assert.ok(!/href="https:\/\/wa\.me/.test(html),route+' direct WA');
+ assert.ok(html.includes('/lead-capture.js'),route+' popup');assert.ok(html.includes('/tracking-consent.js'),route+' consent');assert.ok(!html.includes('id="cookie-banner"'),route+' legacy cookie notice removed');assert.ok(!/href="https:\/\/wa\.me/.test(html),route+' direct WA');
  const graphs=[...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];assert.equal(graphs.length,1,route+' graph count');const graph=JSON.parse(graphs[0][1])['@graph'];assert.ok(graph.some(n=>n['@type']==='WebSite'));
  assert.ok(!JSON.stringify(graph).includes('AggregateRating'));
  const nav=html.match(/<nav class="main-nav"[\s\S]*?<\/nav>/)?.[0]||'';assert.ok(!nav.includes('simulador/'));assert.ok(!nav.includes('>Simulador</a>'));

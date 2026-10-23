@@ -1118,34 +1118,6 @@ function setupWhatsappFloatAvoidance() {
   scheduleUpdate();
 }
 
-function setupCookies() {
-  const banner = document.querySelector("#cookie-banner");
-  const button = document.querySelector("#accept-cookies");
-  const consentCookie = "cristal_cookie_notice=accepted";
-  const hasConsent = () => {
-    try {
-      return localStorage.getItem("cristal-cookie-notice") === "accepted"
-        || document.cookie.split(";").some((cookie) => cookie.trim() === consentCookie);
-    } catch {
-      return false;
-    }
-  };
-  const dismiss = () => {
-    // A classe e o atributo tornam o fechamento imediato, inclusive se o storage do navegador estiver bloqueado.
-    banner.classList.add("is-dismissed");
-    banner.setAttribute("hidden", "");
-    banner.setAttribute("aria-hidden", "true");
-    try {
-      localStorage.setItem("cristal-cookie-notice", "accepted");
-      document.cookie = "cristal_cookie_notice=accepted; max-age=31536000; path=/; SameSite=Lax";
-    } catch {}
-  };
-
-  if (!hasConsent()) banner.hidden = false;
-  else dismiss();
-  button.addEventListener("click", dismiss, { once: true });
-}
-
 function setupModal() {
   dom.modalClose.addEventListener("click", closeLetterModal);
   dom.modal.addEventListener("click", (event) => {
@@ -1164,7 +1136,6 @@ function init() {
   setupSimulation();
   setupReveals();
   setupCounterAnimation();
-  setupCookies();
   setupModal();
   setupWhatsappFloatAvoidance();
   loadPortfolio();

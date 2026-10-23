@@ -31,6 +31,7 @@ function decorate(html,route='/'){
  html=html.replace('</head>',`<script type="application/ld+json">${schema}</script>\n  </head>`);
  if(!html.includes('lead-capture.js'))html=html.replace('</head>','<link rel="stylesheet" href="/commercial.css?v=20261023">\n    <script defer src="/lead-config.js?v=20261023"></script>\n    <script defer src="/lead-capture.js?v=20261023"></script>\n  </head>');
  if(!html.includes('tracking-consent.js'))html=html.replace('<script defer src="/lead-capture.js', '<script defer src="/tracking-consent.js?v=20261023"></script>\n    <script defer src="/lead-capture.js');
+ html=html.replace(/<aside class="cookie-banner"[^>]*>[\s\S]*?<\/aside>\s*/g,'');
  // Commercial CTAs no longer navigate before capture. Existing non-commercial links are retained.
  html=html.replace(/<a\b[^>]*href="https:\/\/wa\.me\/[^\"]*"[^>]*>/g,tag=>tag.replace(/href="[^"]*"/,'href="#atendimento" data-cta-popup data-cta-source="atendimento"').replace(/ target="_blank"/g,''));
  html=html.replace(/<a\b[^>]*>Simulador<\/a>/g,'<a href="/carta-contemplada-imovel/">Carta de imóvel</a><a href="/carta-contemplada-veiculo/">Carta de veículo</a>');
