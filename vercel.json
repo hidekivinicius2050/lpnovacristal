@@ -1,5 +1,13 @@
 {
   "functions": {
     "api/leads.js": { "maxDuration": 30 }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "lpnovacristal\\.vercel\\.app" }],
+      "destination": "https://www.cristalconsorcios.com.br/:path*",
+      "permanent": true
+    }
+  ]
 }

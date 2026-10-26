@@ -23,5 +23,10 @@ const capture=read('lead-capture.js');assert.ok(capture.includes("(quiz|agradeci
 const configContext={window:{}};require('node:vm').runInNewContext(read('lead-config.js'),configContext);const config=configContext.window.CristalLeadConfig;
 assert.equal(config.gtmEnabled,true);assert.equal(config.gtmContainerId,'GTM-K3R4J649');
 assert.equal(config.events.view,'open_form');assert.equal(config.events.start,'form_start');assert.equal(config.events.saved,'form_submit');assert.equal(config.formParameter,'form_name');
-assert.ok(!read('vercel.json').includes('redirects'));
-console.log(`PASS: ${paths.length} protected files match base (text CRLF normalized, binary SHA-256 exact); ${urls.length} public pages, metadata, FAQ/schema, filtered routes, safe tracking configuration and no production/.com redirects.`);
+const routing=JSON.parse(read('vercel.json'));
+assert.deepEqual(routing.redirects,[{source:'/:path*',has:[{type:'host',value:'lpnovacristal\\.vercel\\.app'}],destination:ORIGIN+'/:path*',permanent:true}]);
+assert.equal(routing.functions['api/leads.js'].maxDuration,30);
+const sourceHost=new RegExp('^(?:'+routing.redirects[0].has[0].value+')$');
+assert.ok(sourceHost.test('lpnovacristal.vercel.app'));
+for(const host of ['www.cristalconsorcios.com.br','cristalconsorcios.com.br','cristalconsorcios.com','www.cristalconsorcios.com','lpnovacristal-rlde27yzu-vinicius-projects-da14f17f.vercel.app','lpnovacristal-git-review-vinicius-projects-da14f17f.vercel.app','other.vercel.app','lpnovacristalXvercelXapp'])assert.ok(!sourceHost.test(host),'Unexpected redirect host: '+host);
+console.log(`PASS: ${paths.length} protected files match base (text CRLF normalized, binary SHA-256 exact); ${urls.length} public pages, metadata, FAQ/schema, filtered routes, safe tracking and permanent production-alias redirect without official-domain/preview loops or .com migration.`);
