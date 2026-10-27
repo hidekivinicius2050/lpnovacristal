@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /propostas/
+Disallow: /funcoes
 
 Sitemap: https://www.cristalconsorcios.com.br/sitemap.xml

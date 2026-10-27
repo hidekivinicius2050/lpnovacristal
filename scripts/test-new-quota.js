@@ -1,0 +1,11 @@
+"use strict";
+const assert=require('node:assert/strict'),E=require('../funcoes/cota-nova/engine');
+const base={credit:'100.000,00',term:94,dueDay:5,paymentMin:'1.327,74',paymentMax:'1.417,27',reducedEnabled:true,reducedPayment:'660,30',reduction:50,detailEnabled:true,details:{common:'85,80',reserve:'16,00',fee:'558,50',insurance:'0,00'}};
+const s=E.calculate(base);assert.equal(s.credit,100000);assert.equal(s.reducedPayment,660.3);assert.equal(s.paymentMin,1327.74);assert.equal(s.paymentMax,1417.27);assert.equal(s.details.length,4);assert.equal(E.round(s.details.reduce((n,x)=>n+x.value,0)),660.3);
+const normal=E.calculate({...base,reducedEnabled:false,reducedPayment:'invalid',reduction:'invalid',paymentMax:''});assert.equal(normal.reducedPayment,null);assert.equal(normal.reduction,null);assert.equal(normal.paymentMin,normal.paymentMax);
+assert.equal(E.calculate({...base,detailEnabled:false,details:{fee:-1}}).details.length,0);
+assert.equal(E.calculate({...base,details:{common:''}}).details.length,0);
+assert.equal(E.calculate({...base,reduction:''}).reduction,null);
+for(const change of [{credit:0},{paymentMin:0},{paymentMax:1},{term:0},{term:421},{dueDay:32},{dueDay:1.5},{reducedPayment:-1},{reduction:100},{details:{fee:-1}}])assert.throws(()=>E.calculate({...base,...change}));
+assert.equal(E.number('R$ 100.000,00'),100000);assert.equal(E.number('1327.74'),1327.74);
+console.log('PASS: supplied image, exact quoted installments, range validation, optional reduction, optional components and ignored inactive fields.');

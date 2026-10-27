@@ -1,0 +1,34 @@
+"use strict";
+const assert = require("node:assert/strict");
+const E = require("../funcoes/entrada/engine");
+const example = E.calculate({ credit: "100.000,00", cost: "30.000,00", margin: "5.000,00" });
+assert.equal(example.entry, 35000);
+assert.equal(example.costPercent, 30);
+assert.equal(example.entryPercent, 35);
+assert.equal(example.maximumEntry, 49999.99);
+assert.equal(example.maximumMargin, 19999.99);
+assert.equal(example.room, 14999.99);
+assert.equal(example.maximumMarginPercent, 66.66);
+assert.equal(example.good, true);
+assert.equal(E.calculate({ credit: 100000, cost: 30000, margin: 20000 }).good, false);
+assert.equal(E.calculate({ credit: 100000, cost: 30000, margin: 19999.99 }).good, true);
+assert.equal(E.calculate({ credit: 100.01, cost: 50 }).good, true);
+assert.equal(E.calculate({ credit: 100.01, cost: 50.01 }).good, false);
+assert.equal(E.calculate({ credit: 0.01, cost: 0 }).maximumEntry, 0);
+assert.equal(E.calculate({ credit: 100000, cost: 60000 }).baseGood, false);
+assert.equal(E.calculate({ credit: 100000, cost: 60000 }).maximumMargin, 0);
+assert.equal(E.calculate({ credit: 100000, cost: 0 }).maximumMarginPercent, null);
+assert.equal(E.calculate({ credit: 100000, cost: 30000, margin: 10, mode: "percent" }).entry, 33000);
+for (const invalid of [{ credit: 0, cost: 0 }, { credit: "abc", cost: 0 }, { credit: 100, cost: -1 }, { credit: 100, cost: 1, margin: -1 }, { credit: 100, cost: 1, margin: "abc" }, { credit: Infinity, cost: 0 }]) assert.throws(() => E.calculate(invalid));
+assert.equal(E.number("R$ 1.300.000,50"), 1300000.5);
+assert.equal(E.number("1300000.50"), 1300000.5);
+for (let creditCents = 1; creditCents < 10000; creditCents += 17) {
+  const credit = creditCents / 100;
+  const result = E.calculate({ credit, cost: 0 });
+  const maxCents = Math.round(result.maximumEntry * 100);
+  assert(maxCents * 2 < creditCents);
+  assert((maxCents + 1) * 2 >= creditCents);
+  assert.equal(E.calculate({ credit, cost: result.maximumEntry }).good, true);
+  assert.equal(E.calculate({ credit, cost: (maxCents + 1) / 100 }).good, false);
+}
+console.log("PASS: entry percentages, gross markup, strict 50% boundary, zero/negative/invalid input, BRL parsing and 589 cent-boundary cases.");

@@ -5,7 +5,7 @@
   $('date').value=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let logoPromise;
   function loadLogo() {
-    if(!logoPromise) logoPromise=fetch('../assets/logo.png').then(r=>{if(!r.ok)throw Error('Não foi possível carregar a marca Cristal.');return r.blob();}).then(blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);})).catch(e=>{logoPromise=null;throw e;});
+    if(!logoPromise) logoPromise=fetch('/assets/logo.png').then(r=>{if(!r.ok)throw Error('Não foi possível carregar a marca Cristal.');return r.blob();}).then(blob=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);})).catch(e=>{logoPromise=null;throw e;});
     return logoPromise;
   }
   function addCard(values={}) {

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#061334"><title>Entrada e margem | Funções Cristal</title>
+  <link rel="stylesheet" href="/propostas/propostas.css?v=20261027-funcoes"><link rel="stylesheet" href="/funcoes/funcoes.css?v=20261027-1">
+  <script defer src="/funcoes/entrada/engine.js?v=20261027-1"></script><script defer src="/funcoes/entrada/entrada.js?v=20261027-1"></script>
+</head>
+<body>
+  <header><div class="shell top"><img src="/assets/logo.png" alt="Cristal Consórcios" width="180" height="90"><span>FERRAMENTAS DA EQUIPE</span></div></header>
+  <main class="shell functions-shell">
+    <p class="entry-return"><a class="back-link" href="/funcoes/">← Todas as funções</a></p>
+    <div class="intro entry-intro"><div><p class="eyebrow">ANÁLISE COMERCIAL</p><h1>Entrada certa. Margem clara.</h1><p>Veja o percentual atual e quanto cabe acrescentar na negociação.</p></div></div>
+    <div class="calculator-layout">
+      <div>
+        <form class="panel" id="entry-form" novalidate>
+          <div class="section-title"><span class="number">01</span><h2>Condições da carta</h2></div>
+          <p class="calc-rule">Critério da Cristal: entrada final <strong>menor que 50% do crédito</strong>. Uma entrada de exatamente 50% fica fora do critério.</p>
+          <div class="grid">
+            <label>Crédito da carta (R$)<input id="credit" inputmode="decimal" autocomplete="off" placeholder="Ex.: 100.000,00" aria-describedby="entry-feedback" required></label>
+            <label>Entrada de custo / parceiro (R$)<input id="cost" inputmode="decimal" autocomplete="off" placeholder="Ex.: 30.000,00" aria-describedby="entry-feedback" required></label>
+            <label>Acrescentar à entrada<select id="margin-mode"><option value="money">Valor em reais (R$)</option><option value="percent">Percentual sobre a entrada de custo (%)</option></select></label>
+            <label><span id="margin-label">Acréscimo da Cristal (R$)</span><input id="margin" inputmode="decimal" autocomplete="off" placeholder="0,00" value="0,00" aria-describedby="margin-help entry-feedback"></label>
+          </div>
+          <p class="hint" id="margin-help">O acréscimo é somado à entrada do parceiro. Não representa lucro líquido.</p>
+          <div class="calc-actions"><button class="secondary" id="entry-example" type="button">Usar exemplo</button><button class="quiet" type="reset">Limpar</button></div>
+          <p class="calc-feedback" id="entry-feedback" role="status" aria-live="polite"></p>
+        </form>
+        <section class="panel"><h2>Como conferir</h2><p class="calc-detail">O percentual é calculado por <strong>entrada ÷ crédito × 100</strong>. O limite máximo considera centavos para manter a entrada estritamente abaixo de 50%.</p><p class="hint">O critério avalia somente a entrada. Transferência, despesas, saldo e condições das parcelas devem ser analisados à parte.</p></section>
+      </div>
+      <aside>
+        <section class="calc-result" aria-labelledby="result-title">
+          <p class="eyebrow">RESULTADO DA NEGOCIAÇÃO</p><h2 id="result-title">Entrada final no crédito</h2>
+          <p class="calc-empty" id="empty-result">Informe o crédito e a entrada de custo para conferir os percentuais e o espaço para sua margem.</p>
+          <div id="result" hidden>
+            <p class="result-rate" id="final-percent"></p><p class="result-caption" id="final-entry"></p><span class="entry-status" id="entry-status" role="status" aria-live="polite"></span>
+            <div class="entry-meter" aria-hidden="true"><div class="entry-meter-fill" id="entry-meter-fill"></div></div><div class="meter-labels" aria-hidden="true"><span>0%</span><span>Limite: 50%</span><span>100%</span></div>
+            <div class="calc-metric"><span>Entrada de custo / crédito</span><strong id="cost-percent"></strong></div>
+            <div class="calc-metric"><span>Acréscimo proposto</span><strong id="margin-money"></strong></div>
+            <div class="calc-metric"><span id="room-label">Ainda cabe acrescentar</span><strong id="room-money"></strong></div>
+            <div class="calc-limit"><p class="eyebrow">ENTRADA FINAL MÁXIMA</p><h3 id="maximum-entry"></h3><p id="maximum-detail"></p></div>
+            <div class="calc-metric"><span>Acréscimo máximo sobre o custo</span><strong id="maximum-margin"></strong></div><p class="hint" id="maximum-percent"></p>
+            <button class="maximum-button" id="apply-maximum" type="button">Usar acréscimo máximo</button>
+          </div>
+        </section>
+        <p class="local-note">O cálculo fica neste navegador. Os valores digitados não são enviados nem salvos.</p>
+      </aside>
+    </div>
+    <footer>CRISTAL CONSÓRCIOS <span>Entrada e margem · uso da equipe</span></footer>
+  </main>
+</body>
+</html>

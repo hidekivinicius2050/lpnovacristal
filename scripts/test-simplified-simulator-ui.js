@@ -109,12 +109,19 @@ test("a aquisição guiada tem cinco perguntas e uma etapa de resultado", () => 
 });
 
 test("o controlador guiado é carregado depois dos dois controladores financeiros", () => {
-  const resaleIndex = html.indexOf('src="simulador.js');
-  const acquisitionIndex = html.indexOf('src="leverage-simulator.js');
-  const guidedIndex = html.indexOf('src="guided-simulator.js');
+  const resaleIndex = html.indexOf('src="/simulador/simulador.js');
+  const acquisitionIndex = html.indexOf('src="/simulador/leverage-simulator.js');
+  const guidedIndex = html.indexOf('src="/simulador/guided-simulator.js');
   assert.ok(resaleIndex >= 0, "simulador.js deve estar carregado");
   assert.ok(acquisitionIndex > resaleIndex, "leverage-simulator.js deve vir após simulador.js");
   assert.ok(guidedIndex > acquisitionIndex, "guided-simulator.js deve vir após os controladores");
+});
+
+test("os recursos do simulador carregam com ou sem barra final na URL", () => {
+  for (const file of ["simulador.css", "simulation-engine.js", "leverage-engine.js", "simulador.js", "leverage-simulator.js", "guided-simulator.js"]) {
+    const attribute = file.endsWith(".css") ? "href" : "src";
+    assert.ok(html.includes(`${attribute}="/simulador/${file}?`), `${file}: caminho absoluto obrigatório`);
+  }
 });
 
 test("o modo guiado usa as APIs públicas dos controladores existentes", () => {

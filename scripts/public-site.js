@@ -34,7 +34,12 @@ function decorate(html,route='/'){
  html=html.replace(/<aside class="cookie-banner"[^>]*>[\s\S]*?<\/aside>\s*/g,'');
  // Commercial CTAs no longer navigate before capture. Existing non-commercial links are retained.
  html=html.replace(/<a\b[^>]*href="https:\/\/wa\.me\/[^\"]*"[^>]*>/g,tag=>tag.replace(/href="[^"]*"/,'href="#atendimento" data-cta-popup data-cta-source="atendimento"').replace(/ target="_blank"/g,''));
- html=html.replace(/<a\b[^>]*>Simulador<\/a>/g,'<a href="/carta-contemplada-imovel/">Carta de imóvel</a><a href="/carta-contemplada-veiculo/">Carta de veículo</a>');
+ // Retain the public simulator and send catalogue navigation directly to the letters.
+ html=html.replace(/<nav class="main-nav"[\s\S]*?<\/nav>/g,nav=>{
+  nav=nav.replace(/href="\/carta-contemplada-(imovel|veiculo)\/"/g,'href="/carta-contemplada-$1/#cartas"');
+  if(!nav.includes('>Simulador</a>'))nav=nav.replace('<a href="/carta-contemplada-veiculo/#cartas">Carta de veículo</a>','<a href="/carta-contemplada-veiculo/#cartas">Carta de veículo</a><a href="/simulador/">Simulador</a>');
+  return nav;
+ });
  html=html.replace(/href="https:\/\/cristalconsorcios.com[^\"]*politica[^\"]*"/g,'href="/politica-de-privacidade/"');
  if(!html.includes('class="footer-policy" href="/termos-de-uso/"'))html=html.replace(/(<a class="footer-policy"[^>]*>Política de Privacidade<\/a>)/,'$1<a class="footer-policy" href="/termos-de-uso/">Termos de Uso</a>');
  if(!html.includes('apple-touch-icon'))html=html.replace('</head>','<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">\n  </head>');

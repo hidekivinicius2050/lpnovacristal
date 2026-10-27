@@ -60,6 +60,13 @@ let visibleLetters = 6;
 let lastSimulation = null;
 let portfolioLoading = false;
 let portfolioFingerprint = "";
+let portfolioUpdatedAt = null;
+let selectedCreditBand = "all";
+const CREDIT_BANDS = {
+  all: [0, null], upTo50000: [0, 50000], upTo100000: [0, 100000],
+  "100to300": [100000, 300000], "300to500": [300000, 500000],
+  "500to1000": [500000, 1000000], over1000000: [1000000, null]
+};
 const simulationState = { mode: "consorcio", asset: "imovel" };
 
 const dom = {
@@ -68,7 +75,14 @@ const dom = {
   tabs: [...document.querySelectorAll(".catalogue-tab")],
   search: document.querySelector("#search-input"),
   credit: document.querySelector("#credit-filter"),
+  creditRange: document.querySelector("#credit-range"),
   installment: document.querySelector("#installment-filter"),
+  installmentRange: document.querySelector("#installment-range"),
+  admin: document.querySelector("#admin-filter"),
+  sort: document.querySelector("#sort-filter"),
+  bands: [...document.querySelectorAll("[data-credit-band]")],
+  resultCount: document.querySelector("#catalogue-result-count"),
+  catalogueSummary: document.querySelector("#catalogue-static"),
   term: document.querySelector("#term-filter"),
   clear: document.querySelector("#clear-filters"),
   totalCount: document.querySelector("#total-count"),
@@ -238,6 +252,7 @@ async function loadPortfolio() {
     if (fingerprint === portfolioFingerprint) return;
     const firstLoad = !portfolioFingerprint;
     portfolioFingerprint = fingerprint;
+    portfolioUpdatedAt = published.updatedAt;
     closeLetterModal();
     allLetters = published.letters.map((letter) => ({
       id: letter.id, type: letter.type, admin: letter.admin,
@@ -250,6 +265,7 @@ async function loadPortfolio() {
       observation: letter.observation || "Condições disponíveis mediante consulta."
     })).sort((first, second) => second.creditValue - first.creditValue);
     updateCatalogueCounts();
+    updateCatalogueFilterOptions();
     resetCatalogueVisibility();
     renderLetters();
     if (lastSimulation) renderSimulationResults(lastSimulation);
@@ -262,6 +278,8 @@ async function loadPortfolio() {
     activeLetters = [];
     closeLetterModal();
     updateCatalogueCounts();
+    updateCatalogueFilterOptions();
+    dom.resultCount.textContent = "Portfólio indisponível no momento";
     if (lastSimulation) renderSimulationResults(lastSimulation);
     dom.cards.setAttribute("aria-busy", "false");
     dom.cards.innerHTML = `
@@ -277,7 +295,7 @@ async function loadPortfolio() {
 
 function restoreHashLocation() {
   const hash = window.location.hash;
-  if (!hash || hash === "#cartas") return;
+  if (!hash) return;
   try {
     const target = document.querySelector(hash);
     if (target) requestAnimationFrame(() => target.scrollIntoView());
@@ -297,10 +315,60 @@ function updateCatalogueCounts() {
 function currentFilters() {
   return {
     search: normalize(dom.search.value),
-    credit: dom.credit.value,
-    installment: dom.installment.value,
+    credit: readCatalogueLimit(dom.credit),
+    creditMinimum: CREDIT_BANDS[selectedCreditBand][0],
+    installment: readCatalogueLimit(dom.installment),
+    admin: dom.admin.value,
+    sort: dom.sort.value,
     term: dom.term.value
   };
+}
+
+function readCatalogueLimit(input) {
+  if (!input.value.trim()) return null;
+  const value = parseBRMoney(input.value);
+  return Number.isFinite(value) && value >= 0 ? value : null;
+}
+
+function syncCatalogueRange(input, range) {
+  const limit = readCatalogueLimit(input);
+  const max = Number(range.max);
+  range.value = limit === null ? max : Math.min(max, Math.max(0, limit));
+  range.style.setProperty("--range-fill", `${Number(range.value) / max * 100}%`);
+  range.setAttribute("aria-valuetext", limit === null ? "Sem limite" : MONEY_FORMATTER.format(limit));
+}
+
+function updateCreditBands() {
+  dom.bands.forEach((button) => {
+    const active = button.dataset.creditBand === selectedCreditBand;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function updateCatalogueFilterOptions() {
+  const letters = allLetters.filter((letter) => selectedCategory === "todos" || letter.type === selectedCategory);
+  const counts = new Map();
+  letters.forEach((letter) => counts.set(letter.admin, (counts.get(letter.admin) || 0) + 1));
+  const previousAdmin = dom.admin.value;
+  dom.admin.replaceChildren(new Option(`Todas (${letters.length})`, "all"));
+  [...counts].sort(([first], [second]) => first.localeCompare(second, "pt-BR")).forEach(([admin, count]) => {
+    dom.admin.add(new Option(`${admin} (${count})`, admin));
+  });
+  dom.admin.value = counts.has(previousAdmin) ? previousAdmin : "all";
+  dom.creditRange.max = Math.max(1000, Math.ceil(Math.max(0, ...letters.map((letter) => letter.creditValue)) / 1000) * 1000);
+  dom.installmentRange.max = Math.max(100, Math.ceil(Math.max(0, ...letters.map((letter) => letter.installmentValue)) / 100) * 100);
+  syncCatalogueRange(dom.credit, dom.creditRange);
+  syncCatalogueRange(dom.installment, dom.installmentRange);
+  updateCreditBands();
+  if (letters.length) {
+    const values = letters.map((letter) => letter.creditValue);
+    const date = portfolioUpdatedAt && !Number.isNaN(Date.parse(portfolioUpdatedAt))
+      ? ` Referência: ${new Date(portfolioUpdatedAt).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}.` : "";
+    dom.catalogueSummary.textContent = `${letters.length} cartas no catálogo, com créditos de ${MONEY_FORMATTER.format(Math.min(...values))} a ${MONEY_FORMATTER.format(Math.max(...values))}.${date} Entrada sob consulta.`;
+  } else {
+    dom.catalogueSummary.textContent = "Consulte a equipe para verificar as opções disponíveis.";
+  }
 }
 
 function matchesAmount(value, range) {
@@ -321,15 +389,25 @@ function matchesTerm(value, range) {
 
 function getVisibleLetters() {
   const filters = currentFilters();
-  return allLetters.filter((letter) => {
+  const letters = allLetters.filter((letter) => {
     const categoryMatch = selectedCategory === "todos" || letter.type === selectedCategory;
-    const haystack = normalize(`${letter.admin} ${letter.credit} ${letter.entry} ${letter.observation}`);
+    const haystack = normalize(`${letter.admin} ${letter.credit} ${letter.creditValue} ${letter.observation}`);
     return categoryMatch
       && (!filters.search || haystack.includes(filters.search))
-      && matchesAmount(letter.creditValue, filters.credit)
-      && matchesAmount(letter.installmentValue, filters.installment)
+      && (filters.credit === null || letter.creditValue <= filters.credit)
+      && (filters.creditMinimum === 0 || letter.creditValue > filters.creditMinimum)
+      && (filters.installment === null || letter.installmentValue <= filters.installment)
+      && (filters.admin === "all" || letter.admin === filters.admin)
       && matchesTerm(letter.termValue, filters.term);
   });
+  const orders = {
+    "credit-desc": ["creditValue", -1], "credit-asc": ["creditValue", 1],
+    "installment-asc": ["installmentValue", 1], "installment-desc": ["installmentValue", -1],
+    "term-asc": ["termValue", 1], "term-desc": ["termValue", -1]
+  };
+  const [field, direction] = orders[filters.sort] || orders["credit-desc"];
+  return letters.sort((first, second) => direction * (first[field] - second[field])
+    || second.creditValue - first.creditValue || first.id.localeCompare(second.id));
 }
 
 function letterCard(letter, index) {
@@ -370,6 +448,8 @@ function resetCatalogueVisibility() {
 
 function renderLetters() {
   activeLetters = getVisibleLetters();
+  const total = allLetters.filter((letter) => selectedCategory === "todos" || letter.type === selectedCategory).length;
+  dom.resultCount.textContent = `${activeLetters.length} de ${total} cartas encontradas`;
   dom.cards.setAttribute("aria-busy", "false");
   if (!activeLetters.length) {
     dom.cards.innerHTML = `
@@ -431,27 +511,57 @@ function setCategory(category) {
     tab.classList.toggle("active", isActive);
     tab.setAttribute("aria-selected", String(isActive));
   });
+  updateCatalogueFilterOptions();
   resetCatalogueVisibility();
   renderLetters();
 }
 
 function clearFilters() {
   dom.search.value = "";
-  dom.credit.value = "all";
-  dom.installment.value = "all";
+  dom.credit.value = "";
+  dom.installment.value = "";
+  dom.admin.value = "all";
+  dom.sort.value = "credit-desc";
+  selectedCreditBand = "all";
   dom.term.value = "all";
+  updateCatalogueFilterOptions();
   resetCatalogueVisibility();
   renderLetters();
 }
 
 function setupCatalogueControls() {
   dom.tabs.forEach((tab) => tab.addEventListener("click", () => setCategory(tab.dataset.category)));
-  [dom.search, dom.credit, dom.installment, dom.term].forEach((control) => {
+  [dom.search, dom.admin, dom.term, dom.sort].forEach((control) => {
     control.addEventListener(control === dom.search ? "input" : "change", () => {
       resetCatalogueVisibility();
       renderLetters();
     });
   });
+  [[dom.credit, dom.creditRange], [dom.installment, dom.installmentRange]].forEach(([input, range]) => {
+    input.addEventListener("input", () => {
+      if (input === dom.credit) { selectedCreditBand = "all"; updateCreditBands(); }
+      syncCatalogueRange(input, range);
+      resetCatalogueVisibility();
+      renderLetters();
+    });
+    input.addEventListener("blur", () => {
+      const limit = readCatalogueLimit(input);
+      input.value = limit === null ? "" : MONEY_FORMATTER.format(limit);
+    });
+    range.addEventListener("input", () => {
+      input.value = Number(range.value) === Number(range.max) ? "" : MONEY_FORMATTER.format(Number(range.value));
+      input.dispatchEvent(new Event("input"));
+    });
+  });
+  dom.bands.forEach((button) => button.addEventListener("click", () => {
+    selectedCreditBand = button.dataset.creditBand;
+    const [, maximum] = CREDIT_BANDS[selectedCreditBand];
+    dom.credit.value = maximum === null ? "" : MONEY_FORMATTER.format(maximum);
+    syncCatalogueRange(dom.credit, dom.creditRange);
+    updateCreditBands();
+    resetCatalogueVisibility();
+    renderLetters();
+  }));
   dom.clear.addEventListener("click", clearFilters);
   dom.catalogueToggle.addEventListener("click", () => {
     const initialLimit = catalogueBatchSize();

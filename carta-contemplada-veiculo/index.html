@@ -26,9 +26,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css?v=20261015-filtros">
+    <link rel="stylesheet" href="/styles.css?v=20261027-filtros">
     <script defer src="/catalogue-data.js?v=20261005-consulta"></script>
-    <script defer src="/app.js?v=20261023-conversao"></script>
+    <script defer src="/app.js?v=20261027-filtros"></script>
   <link rel="preload" as="image" href="/assets/hero1.webp" fetchpriority="high">
   <link rel="stylesheet" href="/commercial.css?v=20261023">
     <script defer src="/lead-config.js?v=20261023"></script>
@@ -68,7 +68,7 @@
         </button>
 
         <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
-          <a href="/carta-contemplada-imovel/">Carta de imóvel</a><a href="/carta-contemplada-veiculo/">Carta de veículo</a>
+          <a href="/carta-contemplada-imovel/#cartas">Carta de imóvel</a><a href="/carta-contemplada-veiculo/#cartas">Carta de veículo</a><a href="/simulador/">Simulador</a>
           <a href="#cartas">Cartas disponíveis</a>
           <a href="#como-funciona">Como funciona</a>
           <a href="#sobre">A Cristal</a>
@@ -224,54 +224,40 @@
 
           <p class="catalogue-static" id="catalogue-static">167 cartas de veículo no catálogo publicado, com créditos de R$ 19.419,24 a R$ 2.735.000,00. Referência: 15/10/2026. Disponibilidade e condições devem ser confirmadas com a equipe.</p>
           <div class="filter-panel reveal" aria-label="Filtros de cartas">
-            <div class="filter-search">
-              <label class="sr-only" for="search-input">Buscar por administradora ou observação</label>
-              <span aria-hidden="true">⌕</span>
-              <input id="search-input" type="search" placeholder="Buscar administradora ou condição">
+            <div class="filter-primary">
+              <div class="filter-field">
+                <label for="search-input">Buscar</label>
+                <div class="filter-search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Administradora ou crédito (ex.: 100000)"></div>
+              </div>
+              <div class="filter-field filter-range-field">
+                <div class="filter-range-heading"><label for="credit-filter">Crédito até</label><input id="credit-filter" type="text" inputmode="decimal" placeholder="Sem limite" autocomplete="off" aria-label="Crédito máximo em reais"></div>
+                <input class="catalogue-range" id="credit-range" type="range" min="0" max="1000000" step="1000" value="1000000" aria-label="Ajustar crédito máximo" aria-valuetext="Sem limite">
+              </div>
+              <div class="filter-field filter-range-field">
+                <div class="filter-range-heading"><label for="installment-filter">Parcela até</label><input id="installment-filter" type="text" inputmode="decimal" placeholder="Sem limite" autocomplete="off" aria-label="Parcela máxima em reais"></div>
+                <input class="catalogue-range" id="installment-range" type="range" min="0" max="10000" step="50" value="10000" aria-label="Ajustar parcela máxima" aria-valuetext="Sem limite">
+              </div>
+              <div class="filter-field">
+                <label for="admin-filter">Administradora</label>
+                <div class="filter-select-wrap"><select id="admin-filter"><option value="all">Todas</option></select></div>
+              </div>
             </div>
-            <div class="filter-select-wrap">
-              <label class="sr-only" for="credit-filter">Filtrar por crédito</label>
-              <select id="credit-filter">
-                <option value="all">Faixa de crédito</option>
-                <option value="upTo30000">Até R$ 30 mil</option>
-                <option value="upTo50000">Até R$ 50 mil</option>
-                <option value="upTo80000">Até R$ 80 mil</option>
-                <option value="upTo100000">Até R$ 100 mil</option>
-                <option value="upTo150000">Até R$ 150 mil</option>
-                <option value="upTo200000">Até R$ 200 mil</option>
-                <option value="upTo300000">Até R$ 300 mil</option>
-                <option value="upTo600000">Até R$ 600 mil</option>
-                <option value="upTo1000000">Até R$ 1 mi</option>
-                <option value="over1000000">Acima de R$ 1 mi</option>
-              </select>
+            <div class="filter-bands" role="group" aria-label="Faixas rápidas de crédito">
+              <span>Faixa</span>
+              <button type="button" class="credit-band active" data-credit-band="all" aria-pressed="true">Todas</button>
+              <button type="button" class="credit-band" data-credit-band="upTo50000" aria-pressed="false">Até 50 mil</button>
+              <button type="button" class="credit-band" data-credit-band="upTo100000" aria-pressed="false">Até 100 mil</button>
+              <button type="button" class="credit-band" data-credit-band="100to300" aria-pressed="false">100–300 mil</button>
+              <button type="button" class="credit-band" data-credit-band="300to500" aria-pressed="false">300–500 mil</button>
+              <button type="button" class="credit-band" data-credit-band="500to1000" aria-pressed="false">500 mil–1 mi</button>
+              <button type="button" class="credit-band" data-credit-band="over1000000" aria-pressed="false">Acima de 1 mi</button>
             </div>
-            <div class="filter-select-wrap">
-              <label class="sr-only" for="installment-filter">Filtrar pelo valor da parcela anunciada</label>
-              <select id="installment-filter">
-                <option value="all">Valor da parcela</option>
-                <option value="upTo500">Até R$ 500</option>
-                <option value="upTo750">Até R$ 750</option>
-                <option value="upTo1000">Até R$ 1.000</option>
-                <option value="upTo1200">Até R$ 1.200</option>
-                <option value="upTo1500">Até R$ 1.500</option>
-                <option value="upTo2000">Até R$ 2.000</option>
-                <option value="upTo2500">Até R$ 2.500</option>
-                <option value="upTo3000">Até R$ 3.000</option>
-                <option value="upTo5000">Até R$ 5.000</option>
-                <option value="upTo10000">Até R$ 10.000</option>
-                <option value="over10000">Acima de R$ 10.000</option>
-              </select>
+            <div class="filter-secondary">
+              <p id="catalogue-result-count" role="status">Carregando cartas…</p>
+              <div class="filter-inline-field"><label for="term-filter">Prazo</label><div class="filter-select-wrap"><select id="term-filter"><option value="all">Todos os prazos</option><option value="upTo60">Até 60 parcelas</option><option value="61to120">61 a 120 parcelas</option><option value="over120">Acima de 120 parcelas</option></select></div></div>
+              <div class="filter-inline-field"><label for="sort-filter">Ordenar por</label><div class="filter-select-wrap"><select id="sort-filter"><option value="credit-desc">Maior crédito</option><option value="credit-asc">Menor crédito</option><option value="installment-asc">Menor parcela</option><option value="installment-desc">Maior parcela</option><option value="term-asc">Menor prazo</option><option value="term-desc">Maior prazo</option></select></div></div>
+              <button class="clear-filters" id="clear-filters" type="button">Limpar filtros</button>
             </div>
-            <div class="filter-select-wrap">
-              <label class="sr-only" for="term-filter">Filtrar por parcelas</label>
-              <select id="term-filter">
-                <option value="all">Prazo restante</option>
-                <option value="upTo60">Até 60 parcelas</option>
-                <option value="61to120">61 a 120 parcelas</option>
-                <option value="over120">Acima de 120 parcelas</option>
-              </select>
-            </div>
-            <button class="clear-filters" id="clear-filters" type="button">Limpar filtros</button>
           </div>
 
           <div class="catalogue-notice reveal"><span>i</span><p>Condições sujeitas à disponibilidade, análise cadastral, documentação e administradora. Clique em uma carta para conversar sobre a sua operação.</p></div>

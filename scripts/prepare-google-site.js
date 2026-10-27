@@ -50,6 +50,6 @@ for(const [slug,page] of Object.entries(pages)){
 }
 const routes=['/','/carta-contemplada-imovel/','/carta-contemplada-veiculo/','/simulador/','/conteudo/','/politica-de-privacidade/','/termos-de-uso/',...require('../articles-data').map(a=>'/conteudo/'+a.slug+'/')];
 write('sitemap.xml','<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+routes.map(route=>`  <url><loc>${ORIGIN}${route}</loc><lastmod>2026-10-23</lastmod></url>`).join('\n')+'\n</urlset>\n');
-write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /propostas/\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
+write('robots.txt',`User-agent: *\nAllow: /\nDisallow: /propostas/\nDisallow: /funcoes\n\nSitemap: ${ORIGIN}/sitemap.xml\n`);
 write('llms.txt',`# Cristal Consórcios\n\nCartas contempladas de imóvel e veículo em Brasília, com atendimento desde 1996. Condições sujeitas à disponibilidade e às regras da administradora.\n\n## Páginas\n${routes.filter(p=>p!=='/simulador/').map(p=>`- [${p==='/'?'Início':p}](${ORIGIN}${p})`).join('\n')}\n\nContato: ${company.phoneDisplay}, ${company.email}. CNPJ: ${company.taxId}.\n`);
 console.log('Site principal preparado; quiz, agradecimento, propostas e dados do catálogo não são escritos por este script.');
