@@ -8,6 +8,8 @@ Plataforma web da Cristal Consórcios para consulta de cartas contempladas, simu
 
 - Catálogo de cartas contempladas de imóvel e veículo, com entrada sob consulta.
 - Busca por administradora e crédito, limites de crédito e parcela, faixas rápidas e ordenação por valor, parcela ou prazo.
+- Comparação de até três cartas do mesmo tipo e acesso rápido aos filtros no celular. O contato exige o preenchimento do formulário e leva as opções escolhidas para o atendimento.
+- Filtros removíveis, comparação móvel em duas colunas, controles de avaliações e estados visuais de envio do formulário. As fotografias fornecidas pela equipe têm versões WebP e arquivos originais de apoio.
 - Simulador com preenchimento guiado, rápido e análise completa, comparação de cenários e compartilhamento por URL.
 - Formulários de atendimento com validação, registro de origem da campanha e integração de leads.
 - Gerador de propostas de cartas contempladas com até quatro cotas, pagamentos consolidados por período e modelos completo e resumido.
@@ -112,6 +114,8 @@ Os testes de interface utilizam Playwright e uma instalação local do Chrome. C
 
 ```sh
 node scripts/test-catalogue-ui.js
+node scripts/test-catalogue-experience-ui.js
+node scripts/test-site-refinements-ui.js
 node scripts/test-functions-ui.js
 node scripts/test-new-quota-ui.js
 node scripts/test-simplified-simulator-ui.js

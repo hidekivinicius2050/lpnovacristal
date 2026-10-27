@@ -1,0 +1,108 @@
+/* Motion layer for the existing home. Layout, palette and typography stay in styles.css. */
+.home-motion .hero-signature {
+  width: 250px;
+  height: 250px;
+  border: 0;
+  box-shadow: none;
+  transform: none;
+  animation: none;
+  overflow: visible;
+}
+.hero-signature path {
+  fill: none;
+  stroke: #a3e4fa;
+  stroke-width: .5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.signature-outline { opacity: .34; }
+.signature-facets { opacity: .19; }
+.home-motion .crystal-b { animation: none; }
+.home-motion .hero-photo { animation: none; }
+.home-motion .pulse-dot, .home-motion .hero-scroll span { animation: none; }
+.home-motion .hero-proof [data-portfolio-count],
+.home-motion .number-item [data-portfolio-count] { font-variant-numeric: tabular-nums; }
+.home-motion .process-list { position: relative; }
+.home-motion .process-list::before, .home-motion .process-list::after {
+  content: "";
+  position: absolute;
+  top: 34px;
+  bottom: 34px;
+  left: -14px;
+  width: 2px;
+  pointer-events: none;
+}
+.home-motion .process-list::before { background: #d8e8f1; }
+.home-motion .process-list::after {
+  background: var(--blue);
+  transform: scaleY(var(--process-progress, 0));
+  transform-origin: top;
+}
+.home-motion .process-list li > span { transition: color .25s; }
+.home-motion .process-list li.is-current > span { color: var(--ink); font-weight: 700; }
+.home-motion .button .ui-icon, .home-motion .text-link .ui-icon {
+  transition: transform .22s ease;
+}
+.home-motion .hero-actions .button:hover .ui-icon,
+.home-motion .hero-actions .button:focus-visible .ui-icon { transform: translateY(3px); }
+.home-motion .text-link:hover .ui-icon,
+.home-motion .text-link:focus-visible .ui-icon { transform: translateX(3px); }
+.home-motion .main-nav a { position: relative; }
+.home-motion .main-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .2s ease;
+}
+.home-motion .main-nav a:hover::after,
+.home-motion .main-nav a:focus-visible::after { transform: scaleX(1); }
+
+@keyframes cristal-copy-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cristal-photo-enter {
+  from { transform: scale(1.065); }
+  to { transform: scale(1.035); }
+}
+@keyframes cristal-signature-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-motion .hero-content > * { animation: cristal-copy-enter .65s cubic-bezier(.2,.7,.2,1) both; }
+  .home-motion .hero-content > .eyebrow { animation-delay: .04s; }
+  .home-motion .hero h1 { animation-delay: .12s; }
+  .home-motion .hero-copy { animation-delay: .22s; }
+  .home-motion .hero-actions { animation-delay: .32s; }
+  .home-motion .hero-proof { animation-delay: .42s; }
+  .home-motion .hero-photo { animation: cristal-photo-enter 3.8s cubic-bezier(.2,.6,.3,1) both; }
+  .home-motion .signature-outline, .home-motion .signature-facets { stroke-dasharray: 1; animation: cristal-signature-draw 1.9s ease-out both; }
+  .home-motion .signature-outline { animation-delay: .3s; }
+  .home-motion .signature-facets { animation-delay: .8s; }
+  .home-motion .process-list::after { transition: transform .4s ease-out; }
+  .home-motion .hero-scroll span { animation: scroll-line 1.7s ease-in-out 2; }
+}
+@media (max-width: 780px) {
+  .home-motion .hero-signature { width: 170px; height: 170px; top: 20%; right: -30px; }
+  .home-motion .signature-outline { opacity: .17; }
+  .home-motion .signature-facets { opacity: .1; }
+}
+@media (max-width: 1040px) {
+  .home-motion .main-nav a::after { bottom: 7px; right: auto; width: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-motion .hero-content > *, .home-motion .hero-photo,
+  .home-motion .hero-signature path, .home-motion .hero-crystal,
+  .home-motion .hero-scroll span, .home-motion .pulse-dot { animation: none !important; }
+  .home-motion .hero-signature path { stroke-dasharray: none; stroke-dashoffset: 0; }
+  .home-motion .process-list::after, .home-motion .process-list li > span,
+  .home-motion .button .ui-icon, .home-motion .text-link .ui-icon,
+  .home-motion .main-nav a::after { transition: none; }
+}

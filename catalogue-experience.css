@@ -1,0 +1,109 @@
+/* Catalogue interaction layer: existing Cristal colours and required lead capture. */
+.catalogue-enhanced .letter-compare {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 44px; padding: 11px 18px; border: 0; border-top: 1px solid #e2edf2;
+  color: #42637b; background: #fff; font: 600 12px/1.4 "DM Sans",sans-serif;
+  cursor: pointer; touch-action: manipulation;
+}
+.letter-compare svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.catalogue-enhanced .letter-compare:hover { background: #f0f8fd; color: #103e65; }
+.catalogue-enhanced .letter-compare[aria-pressed="true"] { background: #e7f3fa; color: #103e65; }
+.catalogue-enhanced .letter-card.is-compared { border-color: #2b8ac5; box-shadow: 0 0 0 1px #2b8ac5; }
+.compare-feedback { margin: 0 0 18px; min-height: 0; color: #305d7c; font-size: 13px; }
+.compare-feedback:empty { margin: 0; }
+.compare-tray {
+  position: fixed; z-index: 18; bottom: calc(max(18px, env(safe-area-inset-bottom, 0px)) + var(--consent-offset, 0px));
+  left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 28px;
+  width: min(840px, calc(100% - 40px)); padding: 17px 22px; border: 1px solid #295b7c;
+  border-radius: 12px; color: #fff; background: #09213a; box-shadow: 0 12px 45px #03182d36;
+}
+.compare-tray[hidden] { display: none; }
+.compare-tray-copy { min-width: 0; flex: 1; }
+.compare-tray-copy strong { display: block; font: 600 16px/1.3 "Manrope",sans-serif; }
+.compare-tray-copy > span { display: block; overflow: hidden; margin-top: 5px; color: #d5e4ee; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; }
+.compare-tray-actions { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+.compare-tray .button { min-height: 44px; padding: 0 18px; font-size: 12px; }
+.compare-tray .button:disabled { background: #284660; color: #c0d2df; cursor: default; }
+.compare-clear { padding: 10px 4px; min-height: 44px; border: 0; color: #e0edf4; background: none; font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
+.catalogue-enhanced:has(.compare-tray:not([hidden])) .whatsapp-float { opacity: 0; visibility: hidden; pointer-events: none; }
+body:has(dialog[open]) .compare-tray { visibility: hidden; }
+.compare-dialog { width: min(1080px,calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; overscroll-behavior: contain; border: 0; border-radius: 14px; padding: 36px; color: #07192a; background: #fff; box-shadow: 0 30px 80px #0005; }
+.compare-dialog::backdrop { background: #02111ec9; backdrop-filter: blur(4px); }
+.compare-dialog > .eyebrow { padding-right: 35px; }
+.compare-dialog h2 { margin: 12px 0; font-size: clamp(28px,3vw,37px); letter-spacing: -.04em; }
+.compare-intro { max-width: 720px; color: #506d80; font-size: 14px; line-height: 1.6; }
+.compare-close { min-width: 44px; min-height: 44px; }
+.comparison-scroll { overflow-x: auto; overscroll-behavior: contain; margin-top: 24px; border: 1px solid #d8e6ee; border-radius: 8px; scrollbar-color: #88a5ba #edf4f8; }
+.comparison-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+.comparison-table th, .comparison-table td { min-width: 0; padding: 18px; border-bottom: 1px solid #dce8ef; border-right: 1px solid #dce8ef; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.comparison-table tr > :last-child { border-right: 0; }
+.comparison-table tr:last-child > * { border-bottom: 0; }
+.comparison-table th:first-child { width: 150px; color: #526d80; background: #f6f9fc; font-weight: 500; }
+.comparison-table thead th { color: #fff; background: #09213a; font-weight: 600; }
+.comparison-table thead th:first-child { background: #eaf2f7; color: #34526a; }
+.comparison-table thead strong { display: block; font: 600 15px/1.4 "Manrope",sans-serif; }
+.compare-remove { border: 0; color: #cee7f6; background: none; min-height: 32px; padding: 7px 0 0; font: 11px "DM Sans",sans-serif; text-decoration: underline; cursor: pointer; }
+.comparison-table [data-compare-field="credit"] td { color: #103e65; font: 700 clamp(19px,2vw,26px)/1.3 "Manrope",sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.comparison-table [data-compare-field="installment"] td { background: #f1f8fc; color: #103e65; font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.comparison-table [data-compare-field="observation"] td { font-size: 12px; color: #536d7e; line-height: 1.6; white-space: pre-line; }
+.compare-card-contact { display: inline-flex; align-items: center; min-height: 44px; color: #155d8c; font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.compare-disclaimer { margin: 18px 0 22px; color: #536d7e; font-size: 12px; line-height: 1.6; }
+.compare-form-note { margin-top: 12px; text-align: center; color: #536d7e; font-size: 12px; }
+.compare-scroll-hint { display: none; }
+.catalogue-enhanced .letter-modal { width: min(590px,calc(100% - 28px)); padding: 36px; }
+.catalogue-enhanced .letter-modal h2 { font-size: clamp(29px,4vw,40px); letter-spacing: -.05em; color: #0d3453; margin: 14px 0 25px; padding-right: 8px; }
+.catalogue-enhanced .modal-close { min-width: 44px; min-height: 44px; }
+.catalogue-enhanced .modal-data { gap: 0; border-radius: 8px; background: #fff; }
+.catalogue-enhanced .modal-data > div { min-width: 0; padding: 18px; border-bottom: 1px solid #e0eaf0; }
+.catalogue-enhanced .modal-data span { color: #536d7e; font-size: 11px; text-transform: none; letter-spacing: 0; }
+.catalogue-enhanced .modal-data strong { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.catalogue-enhanced .modal-data [data-detail="installment"], .catalogue-enhanced .modal-data [data-detail="term"] { background: #eaf5fc; }
+.catalogue-enhanced .modal-data [data-detail="installment"] strong { color: #103e65; font-size: 25px; font-variant-numeric: tabular-nums; }
+.catalogue-enhanced .modal-data [data-detail="term"] strong { color: #103e65; font-size: 20px; font-variant-numeric: tabular-nums; }
+.catalogue-enhanced .modal-data [data-detail="observation"] { grid-column: 1/-1; border-bottom: 0; }
+.catalogue-enhanced .modal-data [data-detail="observation"] strong { font-size: 13px; line-height: 1.6; font-weight: 400; white-space: pre-line; }
+.catalogue-enhanced .modal-data [data-detail="type"] { grid-column: 1/-1; }
+.catalogue-mobile-tools, .mobile-filter-close { display: none; }
+.catalogue-enhanced .google-reviews-link { margin-top: 24px; color: #b9e8ff; border-color: #5b88a1; }
+.catalogue-enhanced .about-layout { align-items: center; }
+.catalogue-enhanced .about-image { min-height: 0; aspect-ratio: 3 / 2; border-radius: 8px; }
+.catalogue-enhanced .about-image > img { width: 100%; height: 100%; object-fit: contain; filter: none; }
+.catalogue-enhanced .about-stamp { padding: 12px 16px; }
+.catalogue-enhanced .about-stamp span { font-size: 30px; }
+.catalogue-enhanced .compare-dialog :focus-visible, .catalogue-enhanced .compare-tray :focus-visible, .catalogue-enhanced .letter-compare:focus-visible { outline: 3px solid #2b8ac5; outline-offset: 3px; }
+@media (max-width:700px) {
+  .catalogue-enhanced .catalogue { overflow: clip; }
+  .catalogue-mobile-tools { position: sticky; top: 73px; z-index: 6; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; padding: 10px 0; background: #eaf7fc; border-bottom: 1px solid #c9dfe9; scroll-margin-top: 73px; }
+  .catalogue-mobile-tools button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 9px 14px; border: 1px solid #164c71; border-radius: 6px; background: #fff; color: #123c5b; font: 700 12px "DM Sans",sans-serif; cursor: pointer; }
+  .catalogue-mobile-tools svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+  .catalogue-mobile-tools > span { min-width: 0; font-size: 11px; color: #46667a; text-align: right; }
+  .catalogue-enhanced .filter-panel { scroll-margin-top: 145px; }
+  .catalogue-enhanced .mobile-filters-closed { display: none; }
+  .mobile-filter-close { display: block; min-height: 44px; width: 100%; padding: 12px; border: 0; border-radius: 5px; color: #fff; background: #103e65; font: 700 13px "DM Sans",sans-serif; cursor: pointer; }
+  .compare-tray { width: calc(100% - 24px); padding: 14px; gap: 12px; bottom: calc(max(12px, env(safe-area-inset-bottom, 0px)) + var(--consent-offset, 0px)); }
+  .compare-tray-copy strong { font-size: 12px; }
+  .compare-tray-copy > span { font-size: 10px; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .compare-tray-actions { gap: 7px; }
+  .compare-tray .button { min-height: 44px; padding-inline: 11px; font-size: 11px; }
+  .compare-clear { font-size: 11px; }
+  .compare-dialog { padding: 28px 18px 22px; }
+  .compare-dialog h2 { padding-right: 20px; font-size: 28px; }
+  .compare-intro { font-size: 13px; }
+  .compare-scroll-hint { display: block; color: #536d7e; font-size: 11px; margin-top: 16px; }
+  .comparison-scroll { margin-top: 9px; }
+  .comparison-table { min-width: 640px; font-size: 13px; }
+  .comparison-table th:first-child { position: sticky; left: 0; width: 120px; z-index: 1; font-size: 12px; }
+  .comparison-table th, .comparison-table td { padding: 15px; }
+  .comparison-table [data-compare-field="credit"] td { font-size: 21px; }
+  .comparison-table [data-compare-field="installment"] td { font-size: 18px; }
+  .catalogue-enhanced .letter-modal { padding: 32px 22px 24px; }
+  .catalogue-enhanced .modal-data > div { padding: 15px 12px; }
+  .catalogue-enhanced .modal-data [data-detail="installment"] strong { font-size: 22px; }
+  .catalogue-enhanced .modal-data [data-detail="term"] strong { font-size: 18px; }
+  .catalogue-enhanced .about-image { min-height: 0; }
+  .catalogue-enhanced .about-stamp { gap: 9px; padding: 9px 12px; }
+  .catalogue-enhanced .about-stamp span { font-size: 24px; }
+  .catalogue-enhanced .about-stamp small { font-size: 9px; }
+}
+@media (prefers-reduced-motion:no-preference) { .compare-dialog[open] { animation: cristal-copy-enter .22s ease-out; } }
+@media (prefers-reduced-motion:reduce) { .compare-dialog[open] { animation:none; } }

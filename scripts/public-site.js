@@ -50,6 +50,7 @@ function decorate(html,route='/'){
   if(!tag.includes('loading=')&&!tag.includes('fetchpriority=')&&!/logo\.png/.test(src||''))tag=tag.replace(/>$/,' loading="lazy">');
   return tag;
  });
+ if(!html.includes('/site-refinements.css'))html=html.replace('</head>','<link rel="stylesheet" href="/site-refinements.css?v=20261027-polimento-final">\n    <script defer src="/site-refinements.js?v=20261027-polimento-final"></script>\n  </head>');
  return html;
 }
 module.exports={ORIGIN,decorate,organization};

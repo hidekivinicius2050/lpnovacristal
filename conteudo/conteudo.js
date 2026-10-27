@@ -8,7 +8,7 @@
     const menu = document.querySelector("[data-content-menu]");
     if (!toggle || !menu) return;
 
-    const mobile = window.matchMedia("(max-width: 780px)");
+    const mobile = window.matchMedia("(max-width: 1040px)");
     const setOpen = (open) => {
       const shouldOpen = Boolean(open && mobile.matches);
       toggle.setAttribute("aria-expanded", String(shouldOpen));

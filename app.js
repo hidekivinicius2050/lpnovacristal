@@ -310,6 +310,10 @@ function updateCatalogueCounts() {
   dom.totalCount.textContent = allLetters.length;
   dom.homeCount.textContent = homes;
   dom.carCount.textContent = cars;
+  document.querySelectorAll("[data-portfolio-count]").forEach((element) => {
+    element.textContent = portfolioFingerprint ? allLetters.length.toLocaleString("pt-BR") : "—";
+  });
+  window.dispatchEvent(new CustomEvent("cristal:catalogue-updated", { detail: { letters: allLetters } }));
 }
 
 function currentFilters() {
@@ -414,7 +418,7 @@ function letterCard(letter, index) {
   const typeName = letter.type === "imovel" ? "Carta de imóvel" : "Carta de veículo";
   const compactTerm = letter.termValue ? `${letter.termValue} parcelas` : letter.term;
   return `
-    <article class="letter-card">
+    <article class="letter-card" data-card-id="${escapeHTML(letter.id)}">
       <div class="letter-card-head">
         <span class="letter-card-type">${typeName}</span>
         <small>Disponível</small>
@@ -425,8 +429,8 @@ function letterCard(letter, index) {
         <div class="letter-details">
           <div><span>Entrada</span><strong>${escapeHTML(letter.entry)}</strong></div>
           <div><span>Parcelas restantes</span><strong>${escapeHTML(compactTerm)}</strong></div>
-          <div><span>Parcela</span><strong>${escapeHTML(letter.installment)}</strong></div>
-          <div><span>Administradora</span><strong>${escapeHTML(letter.admin)}</strong></div>
+          <div class="card-installment"><span>Parcela atual</span><strong>${escapeHTML(letter.installment)}</strong></div>
+
         </div>
         <p class="letter-observation">${escapeHTML(letter.observation)}</p>
       </div>
@@ -487,15 +491,16 @@ function openLetter(index) {
   dom.modalType.textContent = typeName;
   dom.modalTitle.textContent = `${letter.credit} de crédito`;
   dom.modalData.innerHTML = [
-    ["Administradora", letter.admin],
-    ["Tipo", letter.type === "imovel" ? "Imóvel" : "Veículo"],
-    ["Entrada", letter.entry],
-    ["Parcelas restantes", compactTerm],
-    ["Valor da parcela", letter.installment],
-    ["Observação", letter.observation]
-  ].map(([label, value]) => `<div><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></div>`).join("");
+    ["Valor da parcela", letter.installment, "installment"],
+    ["Parcelas restantes", compactTerm, "term"],
+    ["Administradora", letter.admin, "admin"],
+    ["Entrada", letter.entry, "entry"],
+    ["Tipo", letter.type === "imovel" ? "Imóvel" : "Veículo", "type"],
+    ["Observação", letter.observation, "observation"]
+  ].map(([label, value, field]) => `<div data-detail="${field}"><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></div>`).join("");
   dom.modalWhatsapp.href = "#atendimento";
-  window.CristalLead?.setContext(dom.modalWhatsapp, letter);
+  const summary = `${typeName} da ${letter.admin}\nCrédito: ${letter.credit}\nEntrada: ${letter.entry}\nPrazo: ${compactTerm}\nParcela: ${letter.installment}\nCondições: ${letter.observation}`.slice(0, 1800);
+  window.CristalLead?.setContext(dom.modalWhatsapp, { ...letter, summary });
   dom.modal.showModal();
 }
 
@@ -1105,7 +1110,7 @@ function setupNavigation() {
   updateHeader();
   window.addEventListener("scroll", updateHeader, { passive: true });
 
-  const mobileNavigation = window.matchMedia("(max-width: 780px)");
+  const mobileNavigation = window.matchMedia("(max-width: 1040px)");
   const setMenuState = (isOpen) => {
     toggle.setAttribute("aria-expanded", String(isOpen));
     toggle.setAttribute("aria-label", isOpen ? "Fechar menu" : "Abrir menu");

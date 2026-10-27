@@ -15,7 +15,7 @@ write('simulador/index.html',decorate(read('simulador/index.html'),'/simulador/'
 for(const type of ['imovel','veiculo']){
  let html=read('index.html');const label=type==='imovel'?'imóvel':'veículo';const title=`Carta Contemplada de ${label==='imóvel'?'Imóvel':'Veículo'} em Brasília | Cristal Consórcios`;
  const description=`Carta contemplada de ${label} em Brasília: consulte crédito, prazo e parcela no catálogo da Cristal. Atendimento desde 1996 e acompanhamento da transferência.`;
- html=html.replace('<body class="public-site"','<body class="public-site commercial-page" data-catalogue-type="'+type+'"');
+ html=html.replace(/<body class="([^"]*)"/,(_,classes)=>'<body class="'+classes+' commercial-page" data-catalogue-type="'+type+'"');
  html=html.replace(/<title>[\s\S]*?<\/title>/,`<title>${title}</title>`).replace(/(<meta (?:name="description"|property="og:description"|name="twitter:description") content=")[^"]*/g,'$1'+description).replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*/g,'$1'+title);
  html=html.replace(/<h1 id="hero-title">[\s\S]*?<\/h1>/,`<h1 id="hero-title">Carta contemplada de ${label} em Brasília, <em>decisão transparente.</em></h1>`).replace(/<p class="hero-copy">[\s\S]*?<\/p>/,`<p class="hero-copy">Encontre uma carta contemplada de ${label} em Brasília. Compare as opções e confirme entrada, documentação e condições com a equipe antes de negociar.</p>`);
  html=html.replace(/(<h2 id="cartas-title">)[\s\S]*?<\/h2>/,`$1Carta contemplada de ${label} em Brasília: veja as opções.</h2>`).replace(/(<p class="catalogue-static" id="catalogue-static">)[\s\S]*?(<\/p>)/,'$1'+summary(type)+'$2');
