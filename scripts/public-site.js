@@ -34,10 +34,10 @@ function decorate(html,route='/'){
  html=html.replace(/<aside class="cookie-banner"[^>]*>[\s\S]*?<\/aside>\s*/g,'');
  // Commercial CTAs no longer navigate before capture. Existing non-commercial links are retained.
  html=html.replace(/<a\b[^>]*href="https:\/\/wa\.me\/[^\"]*"[^>]*>/g,tag=>tag.replace(/href="[^"]*"/,'href="#atendimento" data-cta-popup data-cta-source="atendimento"').replace(/ target="_blank"/g,''));
- // Retain the public simulator and send catalogue navigation directly to the letters.
+ // Keep a compact header: customers choose the asset inside Cartas disponíveis.
  html=html.replace(/<nav class="main-nav"[\s\S]*?<\/nav>/g,nav=>{
-  nav=nav.replace(/href="\/carta-contemplada-(imovel|veiculo)\/"/g,'href="/carta-contemplada-$1/#cartas"');
-  if(!nav.includes('>Simulador</a>'))nav=nav.replace('<a href="/carta-contemplada-veiculo/#cartas">Carta de veículo</a>','<a href="/carta-contemplada-veiculo/#cartas">Carta de veículo</a><a href="/simulador/">Simulador</a>');
+  nav=nav.replace(/<a\b[^>]*href="\/carta-contemplada-(?:imovel|veiculo)\/(?:#cartas)?"[^>]*>Carta de (?:imóvel|veículo)<\/a>\s*/g,'');
+  if(!nav.includes('>Simulador</a>'))nav=nav.replace(/<\/nav>/,'<a href="/simulador/">Simulador</a></nav>');
   return nav;
  });
  html=html.replace(/href="https:\/\/cristalconsorcios.com[^\"]*politica[^\"]*"/g,'href="/politica-de-privacidade/"');

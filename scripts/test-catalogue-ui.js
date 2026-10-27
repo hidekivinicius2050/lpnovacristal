@@ -102,10 +102,11 @@ let checks = 0;
     await page.setViewportSize({ width: 1440, height: 1000 });
     for (const [type, label] of [["imovel", "Carta de imóvel"], ["veiculo", "Carta de veículo"]]) {
       await page.goto(origin + "/");
-      await page.locator(".main-nav").getByRole("link", { name: label, exact: true }).click();
+      await page.locator(".main-nav").getByRole("link", { name: "Cartas disponíveis", exact: true }).click();
+      await page.locator(`[data-category="${type}"]`).click();
       await page.waitForSelector(".letter-card");
       await page.waitForFunction(() => { const top = document.querySelector("#cartas").getBoundingClientRect().top; return top >= 0 && top < 160; });
-      assert(page.url().endsWith(`/carta-contemplada-${type}/#cartas`));
+      assert(page.url().endsWith("/#cartas"));
       await checkResults(stock.filter(x => x.type === type));
       const top = await page.locator("#cartas").evaluate(el => el.getBoundingClientRect().top);
       assert(top >= 0 && top < 160, `Catalogue anchor is not visible: ${top}`);
