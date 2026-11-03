@@ -27,10 +27,12 @@ function validate(raw){
 function acknowledged(response,text){
   if(!response.ok)return false;
   if(/^(ok|success|sucesso)$/i.test(text.trim()))return true;
+  // Exact response observed from this CRM, with receipt verified in its UI.
+  if(/^OK - Webhook recebido com sucesso$/i.test(text.trim()))return true;
   try{const x=JSON.parse(text);if(x.success===false||x.ok===false||x.error||['error','failed','erro'].includes(String(x.status).toLowerCase()))return false;return x.success===true||x.ok===true||['success','ok','sucesso','created'].includes(String(x.status).toLowerCase())||Boolean(x.id||x.lead_id||x.data?.id);}catch{return false;}
 }
 async function post(url,payload){
-  const response=await fetch(url,{method:'POST',headers:{'Content-Type':url.includes('script.google.com')?'text/plain;charset=utf-8':'application/json','Idempotency-Key':payload.id},body:JSON.stringify(payload),signal:AbortSignal.timeout(8000),redirect:'follow'});
+  const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':payload.id},body:JSON.stringify(payload),signal:AbortSignal.timeout(8000),redirect:'follow'});
   return {ok:acknowledged(response,await response.text()),definiteRejection:response.status>=400&&response.status<500};
 }
 // Only the validated E.164 phone is exempt from text neutralization.
@@ -39,7 +41,11 @@ function sheetSafe(value,key=''){
   if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,sheetSafe(v,k)]));
   return value;
 }
-function upstreamURL(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='script.google.com'&&/^\/macros\/s\/[^/]+\/exec$/.test(u.pathname)&&!u.username&&!u.password&&!u.search&&!u.hash?u.href:null;}catch{return null;}}
+function upstreamURL(value){try{const u=new URL(value);return u.protocol==='https:'&&u.hostname==='api.crm.alphavillesystems.com.br'&&/^\/api\/webhook\/integration\/\d+$/.test(u.pathname)&&!u.username&&!u.password&&!u.search&&!u.hash?u.href:null;}catch{return null;}}
+function toCRM(lead){
+  const safe=sheetSafe(lead);
+  return {...safe,name:safe.nome,phone:lead.telefone,email:'',subject:'Site Cristal — '+lead.interesse,origin:'Site Cristal',source:'Integração',funnel:'NOVO LEAD',tags:['Site Cristal',lead.interesse],automsg:'',external_id:lead.id,respostas:[lead.interesse,lead.context?.summary||'',lead.context?.credit?`Crédito: ${lead.context.credit}; Administradora: ${lead.context.admin}; Prazo: ${lead.context.term}; Parcela: ${lead.context.installment}`:''].filter(Boolean).join(' | ')};
+}
 function createHandler({env=process.env,journal=null,send=post,log=code=>console.error(JSON.stringify({event:'lead_delivery',code}))}={}){
   return async function handler(req,res){
     res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
@@ -51,8 +57,8 @@ function createHandler({env=process.env,journal=null,send=post,log=code=>console
     let lead;
     try{const raw=typeof req.body==='string'?JSON.parse(req.body):req.body;if(Buffer.byteLength(JSON.stringify(raw||{}))>12000)return reply(413,{saved:false,code:'PAYLOAD_TOO_LARGE'});lead=validate(raw);}catch{return reply(400,{saved:false,code:'INVALID_LEAD'});}
     const store=journal||(env.KV_REST_API_URL&&env.KV_REST_API_TOKEN?new RedisJournal(env.KV_REST_API_URL,env.KV_REST_API_TOKEN):null);
-    const apps=upstreamURL(env.LEADS_APPS_SCRIPT_URL);
-    if(!store||!apps)return reply(503,{saved:false,code:'CONFIGURATION_REQUIRED'});
+    const crm=upstreamURL(env.LEADS_CRM_URL);
+    if(!store||!crm)return reply(503,{saved:false,code:'CONFIGURATION_REQUIRED'});
     const key='cristal:site:lead:'+lead.id,lock=key+':lock';let acquired=false;
     try{
       const ip=String((env.VERCEL==='1'?req.headers['x-vercel-forwarded-for']:req.socket?.remoteAddress)||'unknown').split(',')[0].trim();
@@ -61,13 +67,13 @@ function createHandler({env=process.env,journal=null,send=post,log=code=>console
       const fingerprint=hash(JSON.stringify(lead));let state=await store.get(key);
       if(state&&state.hash!==fingerprint)return reply(409,{saved:false,code:'REQUEST_CONFLICT'});
       const isNew=!state;
-      if(!state)state={hash:fingerprint,apps:'pending'};
-      if(state.apps==='saved')return reply(200,{saved:true,id:lead.id,duplicate:true});
-      if(['sending','unknown'].includes(state.apps))return reply(409,{saved:false,code:'REVIEW_REQUIRED'});
+      if(!state)state={hash:fingerprint,crm:'pending'};
+      if(state.apps==='saved'||state.crm==='saved')return reply(200,{saved:true,id:lead.id,duplicate:true});
+      if(['sending','unknown'].includes(state.apps)||['sending','unknown'].includes(state.crm))return reply(409,{saved:false,code:'REVIEW_REQUIRED'});
       if(isNew&&Math.abs(Date.now()-Date.parse(lead.data))>10*60000)return reply(400,{saved:false,code:'EXPIRED_LEAD'});
       if(await store.count('cristal:site:rate:phone:'+hash(lead.telefone))>5||await store.count('cristal:site:rate:global')>300)return reply(429,{saved:false,code:'RATE_LIMITED'});
-      // The Facebook CRM belongs exclusively to the protected quiz flow.
-      for(const [target,url,payload] of [['apps',apps,sheetSafe(lead)]]){
+      // Main-site contacts now use the CRM by explicit user request. The quiz stays untouched.
+      for(const [target,url,payload] of [['crm',crm,toCRM(lead)]]){
         if(state[target]==='saved')continue;
         // Persist before contacting the provider. An ambiguous result is never blindly retried.
         state[target]='sending';await store.set(key,state);
@@ -87,3 +93,5 @@ module.exports.validate=validate;
 module.exports.acknowledged=acknowledged;
 module.exports.sheetSafe=sheetSafe;
 module.exports.RedisJournal=RedisJournal;
+
+module.exports.toCRM=toCRM;

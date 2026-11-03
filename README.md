@@ -137,7 +137,7 @@ Os geradores antigos estão desativados para impedir regressões no layout. O do
 
 As alterações são enviadas ao repositório após revisão e validação. A integração com a Vercel publica a branch de produção; a conferência final deve verificar o domínio oficial, os arquivos estáticos, o catálogo e os fluxos afetados pela alteração.
 
-O endpoint de leads requer `LEADS_APPS_SCRIPT_URL`, `KV_REST_API_URL` e `KV_REST_API_TOKEN` no ambiente da hospedagem, além das integrações de destino configuradas. Credenciais devem permanecer nas variáveis de ambiente, fora do código e do histórico Git.
+O endpoint de leads requer `LEADS_CRM_URL`, `KV_REST_API_URL` e `KV_REST_API_TOKEN` no ambiente da hospedagem, além das integrações de destino configuradas. Credenciais devem permanecer nas variáveis de ambiente, fora do código e do histórico Git.
 
 ## Testes reproduzíveis e manutenção
 
@@ -147,4 +147,4 @@ O CI verifica `npm run build:check`, os testes e a integridade de `quiz/` e `agr
 
 A execução do build não renova datas editoriais ou legais sem revisão do conteúdo. Cada artigo e página legal conserva sua data factual. O inventário continua sendo o último arquivo publicado, não uma coleta dos parceiros.
 
-Antes de publicar a manutenção de segurança, siga [o roteiro de integração](docs/MANUTENCAO-SEGURANCA.md). A remoção do endereço do código exige configurar o destino na hospedagem antes do deploy. A proteção da escrita direta só estará concluída após atualização e rotação do Apps Script externo.
+Antes de publicar a manutenção de segurança, siga [o roteiro de integração](docs/MANUTENCAO-SEGURANCA.md). O usuário optou por enviar os contatos diretamente ao CRM que recebe o quiz. Configure `LEADS_CRM_URL` na hospedagem antes do deploy. O formulário principal envia a origem Site Cristal, sem pontuação fictícia nem a automação de mensagens do quiz. A integração do quiz permanece intacta. O antigo Apps Script deve ser desativado separadamente pelo responsável.
