@@ -5,6 +5,11 @@ for(const url of ['/.git/config','/.env','/%2egit/config','/scripts/serve.js','/
 for(const url of ['/','/assets/logo.png','/quiz/','/agradecimento/','/data/cartas.json'])assert.ok(staticPath(root,url),url);
 const r=spawnSync(process.execPath,['scripts/build.js','--check'],{cwd:root,encoding:'utf8'});assert.equal(r.status,0,r.stderr);
 const config=require('../vercel.json');for(const item of config.headers){assert.ok(!['/:path*','/(.*)'].includes(item.source));assert.ok(!/quiz|agradecimento/.test(item.source));}
+if(fs.existsSync(path.join(root,'public'))){
+ for(const forbidden of ['.git','.env','api','scripts','docs','node_modules','package.json','vercel.json'])assert.equal(fs.existsSync(path.join(root,'public',forbidden)),false,forbidden+' excluded from public output');
+ const fixture=require('./fixtures/campaign-integrity.json'),crypto=require('node:crypto');
+ for(const [file,hash] of Object.entries(fixture)){const data=fs.readFileSync(path.join(root,'public',file)),normalized=data.includes(0)?data:Buffer.from(data.toString('utf8').replace(/\r\n/g,'\n'));assert.equal(crypto.createHash('sha256').update(normalized).digest('hex'),hash,file+' output unchanged');}
+}
 // Verify the real HTTP servers too, including malformed paths and unchanged campaign routes.
 const {spawn}=require('node:child_process');
 (async()=>{

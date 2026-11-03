@@ -20,7 +20,7 @@ for(const file of publicFiles){
   if(/^(?:https?:)?\/\//.test(url))return match;
   const target=path.resolve(root,url.startsWith('/')?'.'+url:path.join(path.dirname(file),url));
   if(!target.startsWith(root+path.sep)||!fs.existsSync(target))throw Error('Missing local asset: '+url);
-  const hash=crypto.createHash('sha256').update(fs.readFileSync(target)).digest('hex').slice(0,12);
+  const hash=crypto.createHash('sha256').update(fs.readFileSync(target,'utf8').replace(/\r\n/g,'\n')).digest('hex').slice(0,12);
   return prefix+url+'?v='+hash+end;
  });
  plan(file,html);
@@ -33,4 +33,13 @@ else{
  // Stage all results before replacing any approved file. No legacy template is run.
  const staged=[];try{for(const [file,text] of updates){const target=path.join(root,file),temp=target+'.build-tmp';fs.writeFileSync(temp,text);staged.push([target,temp]);}for(const [target,temp] of staged)fs.renameSync(temp,target);}finally{for(const [,temp] of staged)if(fs.existsSync(temp))fs.unlinkSync(temp);}
  console.log('Build: '+updates.size+' metadata/asset references updated; campaign files untouched.');
+ // Vercel's static builder publishes this allowlisted directory; API functions
+ // remain in the repository's api/ directory and are deployed separately.
+ const output=path.resolve(root,'public');
+ if(path.dirname(output)!==root||path.basename(output)!=='public')throw Error('Unsafe output path');
+ if(fs.existsSync(output)&&fs.lstatSync(output).isSymbolicLink())throw Error('Output cannot be a symbolic link');
+ fs.rmSync(output,{recursive:true,force:true});fs.mkdirSync(output);
+ for(const folder of ['assets','quiz','agradecimento','propostas','funcoes','simulador','carta-contemplada-imovel','carta-contemplada-veiculo','conteudo','data','politica-de-privacidade','termos-de-uso'])fs.cpSync(path.join(root,folder),path.join(output,folder),{recursive:true});
+ for(const name of fs.readdirSync(root)){if(/\.(?:html|js|css|xml|txt)$/.test(name)&&fs.statSync(path.join(root,name)).isFile())fs.copyFileSync(path.join(root,name),path.join(output,name));}
+ console.log('Static output: public/; internal configuration and tooling excluded.');
 }

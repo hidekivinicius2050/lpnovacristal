@@ -143,6 +143,8 @@ O endpoint de leads requer `LEADS_CRM_URL`, `KV_REST_API_URL` e `KV_REST_API_TOK
 
 `npm test` executa cálculos, integrações simuladas e validações. `npm run test:ui` inicia um servidor isolado e executa as seis suítes de navegador. Para usar Chromium instalado pelo Playwright, defina `PLAYWRIGHT_CHANNEL=chromium`; por padrão usa Chrome. Instalação no CI: `npx playwright install --with-deps chromium`.
 
+O build também prepara `public/` com uma lista permitida de arquivos do site, incluindo a campanha intacta. Scripts internos, configurações, dependências e código da função não entram na saída estática; a função é publicada separadamente pela Vercel. Os hashes de JS/CSS normalizam quebras de linha para serem estáveis no Windows e no Linux.
+
 O CI verifica `npm run build:check`, os testes e a integridade de `quiz/` e `agradecimento/`, sem depender de commits históricos. Os hashes da campanha estão em `scripts/fixtures/campaign-integrity.json`; não devem ser recalculados para contornar uma falha. Motores financeiros têm testes de comportamento independentes.
 
 A execução do build não renova datas editoriais ou legais sem revisão do conteúdo. Cada artigo e página legal conserva sua data factual. O inventário continua sendo o último arquivo publicado, não uma coleta dos parceiros.
