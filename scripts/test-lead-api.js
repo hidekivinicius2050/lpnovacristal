@@ -1,14 +1,9 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {createHandler,acknowledged}=require('../api/leads');
-class MemoryJournal {
- constructor(){this.items=new Map();this.hits=new Map();}
- async get(key){return this.items.has(key)?JSON.parse(this.items.get(key)):null;}
- async set(key,value,ttl,nx){if(nx&&this.items.has(key))return null;this.items.set(key,JSON.stringify(value));return 'OK';}
- async del(key){this.items.delete(key);}
- async count(key){const n=(this.hits.get(key)||0)+1;this.hits.set(key,n);return n;}
-}
-const fixture=()=>({id:crypto.randomUUID(),nome:'Cliente de Teste',telefone:'+5561999990000',interesse:'Carta de imóvel',data:'2026-10-23T15:00:00-03:00',pagina:'https://www.cristalconsorcios.com.br/?nome=nao-expor',landing_page:'https://www.cristalconsorcios.com.br/',referrer:'https://www.google.com/search?q=privado',utm_source:'google',utm_campaign:'teste',utm_content:'conteudo-correto',gclid:'TEST-CLICK-ID',page_type:'home',form_nome:'home:cartas-modal',context:{id:'c-test',type:'imovel',admin:'Caixa',credit:'R$ 300.000,00',creditValue:300000,term:'153 meses',installment:'R$ 1.985,88'}});
+const {createHandler:handlerFactory,acknowledged}=require('../api/leads');
+const createHandler=(options={})=>handlerFactory({...options,log:()=>{},env:{LEADS_APPS_SCRIPT_URL:'https://script.google.com/macros/s/TEST_ONLY/exec',...options.env}});
+const {MemoryJournal}=require('./lib/memory-journal');
+const fixture=()=>({id:crypto.randomUUID(),nome:'Cliente de Teste',telefone:'+5561999990000',interesse:'Carta de imóvel',data:new Date().toISOString(),pagina:'https://www.cristalconsorcios.com.br/?nome=nao-expor',landing_page:'https://www.cristalconsorcios.com.br/',referrer:'https://www.google.com/search?q=privado',utm_source:'google',utm_campaign:'teste',utm_content:'conteudo-correto',gclid:'TEST-CLICK-ID',page_type:'home',form_nome:'home:cartas-modal',context:{id:'c-test',type:'imovel',admin:'Caixa',credit:'R$ 300.000,00',creditValue:300000,term:'153 meses',installment:'R$ 1.985,88'}});
 async function call(handler,body,method='POST',origin='https://www.cristalconsorcios.com.br'){
  let result;const req={method,body,headers:{origin,'x-forwarded-for':'127.0.0.1'}};
  const res={setHeader(){},status(code){this.code=code;return this;},json(body){result={code:this.code,body};return result;}};

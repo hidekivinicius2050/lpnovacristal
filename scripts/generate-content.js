@@ -1,4 +1,5 @@
 "use strict";
+throw new Error('Legacy generator disabled: approved HTML is the source of truth. Use npm run build for catalogue metadata; edit editorial HTML directly.');
 
 const fs = require("node:fs");
 const path = require("node:path");

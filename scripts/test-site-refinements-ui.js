@@ -3,7 +3,7 @@
 const {chromium}=require('playwright');const assert=require('node:assert/strict'),fs=require('fs'),path=require('path');
 const origin=process.env.CRISTAL_TEST_URL||'http://127.0.0.1:4175';const root=path.resolve(__dirname,'..');const out=path.resolve(root,'../../output/playwright');
 const stock=JSON.parse(fs.readFileSync(path.join(root,'data/cartas.json'),'utf8')).letters;let checks=0;
-(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
+(async()=>{const browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL==='chromium'?undefined:(process.env.PLAYWRIGHT_CHANNEL||'chrome'),headless:true});try{
  const page=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  let pending,requests=0;await page.route('**/api/leads',route=>{requests++;pending=route;});
  await page.goto(origin+'/?qa=refinements#cartas');await page.waitForSelector('.letter-compare');

@@ -95,6 +95,11 @@
         const response=await fetch(config.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         const result=await response.json().catch(()=>({}));
         if(!response.ok||result.saved!==true){
+          // Expiry is a definite rejection before delivery; a new attempt is safe.
+          if(result.code==='EXPIRED_LEAD'){
+            attempts.delete(key);try{sessionStorage.removeItem(key);}catch{}
+            throw Error('O formulário expirou. Confira seus dados e clique em enviar novamente.');
+          }
           if(result.code==='REVIEW_REQUIRED')throw Error('O envio está sendo conferido. Não repita o cadastro; tente novamente mais tarde.');
           throw Error(result.code==='CONFIGURATION_REQUIRED'?'O formulário ainda está sendo configurado. Tente novamente mais tarde.':'Não foi possível confirmar o cadastro. Seus dados continuam preenchidos; tente novamente.');
         }

@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
 const origin = process.env.CRISTAL_TEST_URL || "http://127.0.0.1:4175";
 const output = path.resolve(__dirname, "../../../output");
 (async () => {
-  const browser = await chromium.launch({ headless: true, channel: "chrome" });
+  const browser = await chromium.launch({ headless: true, channel: process.env.PLAYWRIGHT_CHANNEL === "chromium" ? undefined : (process.env.PLAYWRIGHT_CHANNEL || "chrome") });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = [], failed = [], sends = [];

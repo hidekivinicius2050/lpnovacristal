@@ -1,7 +1,7 @@
 "use strict";
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const origin=process.env.CRISTAL_TEST_URL||'http://127.0.0.1:4175',out=path.resolve(__dirname,'../../../output'),pdfDir=path.join(out,'pdf');
-(async()=>{fs.mkdirSync(pdfDir,{recursive:true});const b=await chromium.launch({channel:'chrome',headless:true});try{
+(async()=>{fs.mkdirSync(pdfDir,{recursive:true});const b=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL==='chromium'?undefined:(process.env.PLAYWRIGHT_CHANNEL||'chrome'),headless:true});try{
  const p=await b.newPage({viewport:{width:1440,height:1100},acceptDownloads:true});const errors=[],bad=[],sent=[];p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.url().startsWith(origin)&&r.status()>=400)bad.push(r.url());});p.on('request',r=>{if(r.method()!=='GET')sent.push(r.url());});
  await p.goto(origin+'/funcoes/');await p.getByRole('link',{name:/Proposta de cota nova/}).click();
  for(const route of ['/funcoes/cota-nova','/funcoes/cota-nova/']){

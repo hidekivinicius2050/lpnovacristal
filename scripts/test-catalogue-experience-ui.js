@@ -7,13 +7,15 @@ const stock=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../data/cartas.js
 const output=path.resolve(__dirname,'../../output/playwright');
 let checks=0;
 (async()=>{
- const browser=await chromium.launch({channel:'chrome',headless:true});
+ const browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL==='chromium'?undefined:(process.env.PLAYWRIGHT_CHANNEL||'chrome'),headless:true});
  try {
   const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+  await page.clock.install();
   page.on('pageerror',e=>errors.push(e.message));
   // All writes and WhatsApp navigation are local mocks. No real leads are sent.
   let posts=[],allowSave=false,sequence=[],current=structuredClone(stock);
-  await page.route('**/data/cartas.json?*',route=>route.fulfill({json:current}));
+  let catalogueRequests=0;
+  await page.route('**/data/cartas.json*',route=>{catalogueRequests++;return route.fulfill({json:current});});
   await page.route('**/api/leads',async route=>{
    posts.push(JSON.parse(route.request().postData()));sequence.push('save');
    await route.fulfill({status:allowSave?200:503,json:{saved:allowSave}});
@@ -75,7 +77,11 @@ let checks=0;
   await page.screenshot({path:path.join(output,'comparison-mobile-verified.png')});checks++;
   // Availability refresh removes a retired selection instead of keeping an old offer.
   await page.locator('.compare-close').click();const retired=await page.locator('.letter-compare[aria-pressed=true]').first().getAttribute('data-compare-id');
-  current={...stock,letters:stock.letters.filter(x=>x.id!==retired)};await page.evaluate(()=>loadPortfolio());
+  current={...stock,letters:stock.letters.filter(x=>x.id!==retired)};
+  const beforeRefresh=catalogueRequests;
+  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  assert.equal(catalogueRequests,beforeRefresh,'Focus within five minutes must not reload inventory');
+  await page.clock.fastForward(300001);
   await page.waitForFunction(()=>document.querySelector('#compare-selection-label').textContent.startsWith('1 de 3'));
   assert.match(await page.locator('#compare-feedback').innerText(),/disponibilidade mudou/);checks++;
   await page.locator('.compare-clear').click();

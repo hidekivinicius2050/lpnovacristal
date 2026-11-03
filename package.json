@@ -1,0 +1,20 @@
+{
+  "name": "cristal-consorcios",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "build:check": "node scripts/build.js --check",
+    "serve": "node scripts/serve.js",
+    "test": "npm run test:unit",
+    "test:unit": "node scripts/test-simulator.js && node scripts/test-leverage-simulator.js && node scripts/test-proposals.js && node scripts/test-entry-calculator.js && node scripts/test-new-quota.js && node scripts/test-lead-api.js && node scripts/test-lead-security.js && node scripts/test-tracking-consent.js && node scripts/test-google-site.js && node scripts/validate-content.js && node scripts/test-simplified-simulator-ui.js && node scripts/test-maintenance.js",
+    "test:ui": "node scripts/run-ui-tests.js",
+    "validate": "node scripts/validate-content.js"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

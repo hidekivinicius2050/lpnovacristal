@@ -241,11 +241,13 @@ function mapSheetToLetters(csv, type) {
   }).filter((letter) => letter.creditValue > 0 || letter.admin !== "Administradora sob consulta");
 }
 
+let portfolioLastCheck = 0;
 async function loadPortfolio() {
-  if (portfolioLoading) return;
+  if (portfolioLoading || Date.now() - portfolioLastCheck < 300000) return;
   portfolioLoading = true;
+  portfolioLastCheck = Date.now();
   try {
-    const response = await fetch(`${CRISTAL.catalogueUrl}?v=${Date.now()}`, { cache: "no-store" });
+    const response = await fetch(CRISTAL.catalogueUrl, { cache: "no-cache" });
     if (!response.ok) throw new Error(`Catálogo indisponível (${response.status})`);
     const published = CristalCatalogue.readPublished(await response.json());
     const fingerprint = JSON.stringify(published.letters);
@@ -272,6 +274,7 @@ async function loadPortfolio() {
     if (firstLoad) restoreHashLocation();
     dom.status.innerHTML = allLetters.length ? "<span></span> Portfólio ativo" : "<span></span> Sem cartas disponíveis";
   } catch (error) {
+    portfolioLastCheck = 0;
     console.error("Não foi possível carregar as cartas:", error);
     portfolioFingerprint = "";
     allLetters = [];
@@ -1244,7 +1247,8 @@ function setupModal() {
 }
 
 function init() {
-  document.querySelector("#current-year").textContent = new Date().getFullYear();
+  const year = document.querySelector("#current-year");
+  if (year) year.textContent = new Date().getFullYear();
   setupNavigation();
   setupCatalogueControls();
   if (document.body.dataset.catalogueType) setCategory(document.body.dataset.catalogueType);
@@ -1254,8 +1258,9 @@ function init() {
   setupModal();
   setupWhatsappFloatAvoidance();
   loadPortfolio();
-  window.setInterval(() => { if (!document.hidden) loadPortfolio(); }, 60000);
+  window.setInterval(() => { if (!document.hidden) loadPortfolio(); }, 300000);
   window.addEventListener("focus", loadPortfolio);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) loadPortfolio(); });
 }
 
 document.addEventListener("DOMContentLoaded", init);

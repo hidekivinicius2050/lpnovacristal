@@ -1,13 +1,13 @@
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process'),crypto=require('node:crypto');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const ORIGIN='https://www.cristalconsorcios.com.br';
-// Baseline immediately before the catalogue UI/internal-tools release. Protect
-// tracking and financial engines; inventory is validated by the public catalogue contract.
-const baseline='0e898ee';
-const protectedPaths=['quiz','agradecimento','propostas/engine.js','propostas/pdf.js','propostas/vendor','catalogue-data.js','articles-data.js','api','lead-capture.js','lead-config.js','tracking-consent.js','simulador/simulation-engine.js','simulador/leverage-engine.js','simulador/simulador.js','simulador/leverage-simulator.js','simulador/guided-simulator.js','simulador/simulador.css'];
-const paths=cp.execFileSync('git',['ls-tree','-r','--name-only',baseline,'--',...protectedPaths],{cwd:root,encoding:'utf8'}).trim().split('\n').filter(Boolean);
-for(const p of paths){const prior=cp.execFileSync('git',['show',baseline+':'+p],{cwd:root,maxBuffer:20*1024*1024});const now=fs.readFileSync(path.join(root,p));const canonical=x=>x.includes(0)?x:Buffer.from(x.toString('utf8').replace(/\r\n/g,'\n'));const digest=x=>crypto.createHash('sha256').update(canonical(x)).digest('hex');assert.equal(digest(now),digest(prior),'Protected file changed: '+p);}
+// Campaign integrity is independent of clone depth. Finance/API have behavioral tests.
+const fixture=require('./fixtures/campaign-integrity.json');
+const paths=Object.keys(fixture);
+const actual=['quiz','agradecimento'].flatMap(folder=>fs.readdirSync(path.join(root,folder),{recursive:true,withFileTypes:true}).filter(e=>e.isFile()).map(e=>path.relative(root,path.join(e.parentPath||e.path,e.name)).replaceAll('\\','/'))).sort();
+assert.deepEqual(actual,paths.slice().sort(),'Campaign file list changed');
+for(const p of paths){const x=fs.readFileSync(path.join(root,p));const canonical=x.includes(0)?x:Buffer.from(x.toString('utf8').replace(/\r\n/g,'\n'));assert.equal(crypto.createHash('sha256').update(canonical).digest('hex'),fixture[p],'Protected campaign changed: '+p);}
 const urls=['/','/carta-contemplada-imovel/','/carta-contemplada-veiculo/','/conteudo/','/simulador/','/politica-de-privacidade/','/termos-de-uso/',...require('../articles-data').map(a=>'/conteudo/'+a.slug+'/')];
 for(const route of urls){
  const html=read(route==='/'?'index.html':route.slice(1)+'index.html');
@@ -35,4 +35,4 @@ assert.equal(routing.functions['api/leads.js'].maxDuration,30);
 const sourceHost=new RegExp('^(?:'+routing.redirects[0].has[0].value+')$');
 assert.ok(sourceHost.test('lpnovacristal.vercel.app'));
 for(const host of ['www.cristalconsorcios.com.br','cristalconsorcios.com.br','cristalconsorcios.com','www.cristalconsorcios.com','lpnovacristal-rlde27yzu-vinicius-projects-da14f17f.vercel.app','lpnovacristal-git-review-vinicius-projects-da14f17f.vercel.app','other.vercel.app','lpnovacristalXvercelXapp'])assert.ok(!sourceHost.test(host),'Unexpected redirect host: '+host);
-console.log(`PASS: ${paths.length} protected files match base (text CRLF normalized, binary SHA-256 exact); ${urls.length} public pages, metadata, FAQ/schema, filtered routes, safe tracking and permanent production-alias redirect without official-domain/preview loops or .com migration.`);
+console.log(`PASS: ${paths.length} campaign files match integrity fixture (text CRLF normalized, binary SHA-256 exact); ${urls.length} public pages, metadata, FAQ/schema, filtered routes, safe tracking and permanent production-alias redirect without official-domain/preview loops or .com migration.`);

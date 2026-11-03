@@ -19,7 +19,8 @@
   feedback.id = 'compare-feedback';
   feedback.className = 'compare-feedback';
   feedback.setAttribute('role', 'status');
-  document.querySelector('.catalogue-notice').after(feedback);
+  const notice = document.querySelector('.catalogue-notice');
+  if (notice) notice.after(feedback); else panel.after(feedback);
   const say = message => {
     feedback.textContent = message;
     if (selected.size) tray.querySelector('#compare-selection-summary').textContent = message;

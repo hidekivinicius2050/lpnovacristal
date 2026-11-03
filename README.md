@@ -47,7 +47,7 @@ Os dados institucionais ficam em `company-data.js`; os artigos, em `articles-dat
 
 ## Desenvolvimento local
 
-Com Node.js instalado, execute na raiz do projeto:
+Use Node.js 22 ou 24. Instale as dependências com `npm ci` e execute na raiz do projeto:
 
 ```sh
 node scripts/serve.js
@@ -84,7 +84,7 @@ Os valores do exemplo são ilustrativos. Cada carta precisa de um identificador 
 
 A publicação substitui a lista completa. Na conferência das fontes, devem ser incluídas apenas ofertas disponíveis, excluindo as vendidas ou reservadas e preservando cotas distintas com condições iguais. Planos com parcelas em etapas precisam manter a descrição das etapas e usar a parcela inicial no filtro.
 
-O navegador consulta o catálogo na abertura, ao retornar à janela e a cada minuto enquanto a página estiver visível. Essa atualização reflete o último arquivo publicado; não representa sincronização direta com os sites dos parceiros.
+O navegador consulta o catálogo na abertura, ao retornar à janela e a cada cinco minutos enquanto a página estiver visível. Essa atualização reflete o último arquivo publicado; não representa sincronização direta com os sites dos parceiros.
 
 ## Propostas e simulações
 
@@ -123,17 +123,28 @@ node scripts/test-simplified-simulator-ui.js
 
 ## Conteúdo e SEO
 
-Para regenerar o conteúdo editorial e validar os arquivos resultantes:
+Os HTML aprovados são a fonte de verdade. Edite o conteúdo editorial diretamente nas páginas existentes. O build atualiza somente os resumos do catálogo, as datas dessas três rotas no sitemap e as versões de JS/CSS por hash de conteúdo:
 
 ```sh
-node scripts/generate-content.js
+npm run build
+npm run build:check
 node scripts/validate-content.js
 ```
 
-O domínio padrão do gerador é `https://www.cristalconsorcios.com.br`. O projeto inclui URLs canônicas, Open Graph, dados estruturados em JSON-LD, `sitemap.xml`, `robots.txt` e `llms.txt`.
+Os geradores antigos estão desativados para impedir regressões no layout. O domínio oficial é `https://www.cristalconsorcios.com.br`. O projeto inclui URLs canônicas, Open Graph, dados estruturados em JSON-LD, `sitemap.xml`, `robots.txt` e `llms.txt`.
 
 ## Publicação
 
 As alterações são enviadas ao repositório após revisão e validação. A integração com a Vercel publica a branch de produção; a conferência final deve verificar o domínio oficial, os arquivos estáticos, o catálogo e os fluxos afetados pela alteração.
 
-O endpoint de leads requer `KV_REST_API_URL` e `KV_REST_API_TOKEN` no ambiente da hospedagem, além das integrações de destino configuradas. Credenciais devem permanecer nas variáveis de ambiente, fora do código e do histórico Git.
+O endpoint de leads requer `LEADS_APPS_SCRIPT_URL`, `KV_REST_API_URL` e `KV_REST_API_TOKEN` no ambiente da hospedagem, além das integrações de destino configuradas. Credenciais devem permanecer nas variáveis de ambiente, fora do código e do histórico Git.
+
+## Testes reproduzíveis e manutenção
+
+`npm test` executa cálculos, integrações simuladas e validações. `npm run test:ui` inicia um servidor isolado e executa as seis suítes de navegador. Para usar Chromium instalado pelo Playwright, defina `PLAYWRIGHT_CHANNEL=chromium`; por padrão usa Chrome. Instalação no CI: `npx playwright install --with-deps chromium`.
+
+O CI verifica `npm run build:check`, os testes e a integridade de `quiz/` e `agradecimento/`, sem depender de commits históricos. Os hashes da campanha estão em `scripts/fixtures/campaign-integrity.json`; não devem ser recalculados para contornar uma falha. Motores financeiros têm testes de comportamento independentes.
+
+A execução do build não renova datas editoriais ou legais sem revisão do conteúdo. Cada artigo e página legal conserva sua data factual. O inventário continua sendo o último arquivo publicado, não uma coleta dos parceiros.
+
+Antes de publicar a manutenção de segurança, siga [o roteiro de integração](docs/MANUTENCAO-SEGURANCA.md). A remoção do endereço do código exige configurar o destino na hospedagem antes do deploy. A proteção da escrita direta só estará concluída após atualização e rotação do Apps Script externo.
