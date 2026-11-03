@@ -5,6 +5,13 @@ const c=(credit,entry,months,payment)=>({administrator:'Caixa',credit,entry,mont
 const demo=E.consolidate([c(150000,45000,123,1200),c(80000,25000,70,700)]);
 assert.deepEqual(demo.stages,[{start:1,end:70,months:70,payment:1900},{start:71,end:123,months:53,payment:1200}]);
 assert.equal(demo.credit,230000);assert.equal(demo.entry,70000);assert.equal(demo.debt,196600);assert.equal(demo.total,268900);
+// A single combined credit/entry can have several simultaneous payment plans.
+const grouped=E.consolidate([{...c(100878.38,42000,44,2313.75),payments:[{months:44,payment:2313.75},{months:30,payment:700}]}]);
+assert.equal(grouped.credit,100878.38);assert.equal(grouped.entry,42000);assert.equal(grouped.transfer,1008.78);
+assert.equal(grouped.debt,122805);assert.equal(grouped.total,165813.78);
+assert.deepEqual(grouped.stages,[{start:1,end:30,months:30,payment:3013.75},{start:31,end:44,months:14,payment:2313.75}]);
+for(const payments of [[],[{months:0,payment:1}],[{months:1,payment:0}],[{months:1.5,payment:20}],[{months:2,payment:NaN}],Array.from({length:5},()=>({months:12,payment:50}))])assert.throws(()=>E.consolidate([{...c(100000,30000,44,100),payments}]));
+const sameEnd=E.consolidate([{...c(100000,30000,12,100),payments:[{months:12,payment:100.01},{months:12,payment:200.02}]}]);assert.equal(sameEnd.stages.length,1);assert.equal(sameEnd.stages[0].payment,300.03);assert.equal(sameEnd.debt,3600.36);
 // Independently expand simultaneous payments, including equal end dates and cents.
 for(const cards of [[c(50000,10000,36,731.13)], [c(30000,5000,24,100),c(20000,2000,24,200)], [c(1e5,2e4,1,100.01),c(1e5,2e4,2,200.02),c(1e5,2e4,3,300.03),c(1e5,2e4,4,400.04)]]) {
   const out=E.consolidate(cards);let independent=0;

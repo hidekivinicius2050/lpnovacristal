@@ -9,21 +9,37 @@
     return logoPromise;
   }
   function addCard(values={}) {
-    if(cards.children.length>=4)return;
+    if(groupCount()>=4)return;
     const card=$('card-template').content.firstElementChild.cloneNode(true);
     for(const [key,value] of Object.entries(values))card.querySelector(`[data-field="${key}"]`).value=value;
-    card.querySelector('.remove').addEventListener('click',()=>{card.remove();renumber();preview();});cards.append(card);renumber();modelChanged();return card;
+    card.querySelector('.remove').addEventListener('click',()=>{card.remove();renumber();preview();status('');});
+    card.querySelector('.add-payment').addEventListener('click',()=>{
+      if(groupCount()>=4)return;
+      const group=$('payment-template').content.firstElementChild.cloneNode(true);
+      card.querySelector('.payment-groups').append(group);wirePayment(group);renumber();preview();status('');group.querySelector('input').focus();
+    });
+    wirePayment(card.querySelector('.payment-group'));cards.append(card);renumber();modelChanged();return card;
   }
+  function groupCount(){return cards.querySelectorAll('.payment-group').length;}
+  function wirePayment(group){group.querySelector('.remove-payment').addEventListener('click',()=>{const card=group.closest('.card');group.remove();renumber();preview();status('');card.querySelector('.add-payment').focus();});}
   function renumber() {
-    [...cards.children].forEach((card,i)=>{card.querySelector('.card-index').textContent=i+1;card.querySelector('.remove').hidden=cards.children.length===1;card.querySelector('.remove').setAttribute('aria-label',`Remover carta ${i+1}`);});
-    $('add-card').hidden=!$('multiple').checked||cards.children.length>=4;
+    [...cards.children].forEach((card,i)=>{
+      card.querySelector('.card-index').textContent=i+1;
+      card.querySelector('.card-label').textContent=cards.children.length===1?'Crédito e entrada':'Carta';
+      card.querySelector('.card-index').hidden=cards.children.length===1;
+      card.querySelector('.remove').hidden=cards.children.length===1;card.querySelector('.remove').setAttribute('aria-label',`Remover carta ${i+1}`);
+      const groups=card.querySelectorAll('.payment-group');groups.forEach((group,j)=>{group.querySelector('.payment-index').textContent=j+1;group.querySelector('.remove-payment').hidden=groups.length===1;group.querySelector('.remove-payment').setAttribute('aria-label',`Remover grupo de parcelas ${j+1} da carta ${i+1}`);});
+      card.querySelector('.add-payment').hidden=groupCount()>=4;
+    });
+    $('add-card').hidden=!$('multiple').checked||groupCount()>=4;
   }
   function readCards() {
     return [...cards.children].map(card=>{
       const v=k=>card.querySelector(`[data-field="${k}"]`).value;
       const credit=E.number(v('credit')),transferValue=E.number(v('transferInput'));
       const transfer=$('model').value==='resumida'?0:v('transferMode')==='percent'?E.round(credit*transferValue/100):transferValue;
-      return {administrator:v('administrator'),credit:E.round(credit),entry:E.round(E.number(v('entry'))),transfer,payment:E.round(E.number(v('payment'))),months:Number(v('months'))};
+      const payments=[...card.querySelectorAll('.payment-group')].map(group=>({months:Number(group.querySelector('[data-field="months"]').value),payment:E.round(E.number(group.querySelector('[data-field="payment"]').value))}));
+      return {administrator:v('administrator'),credit:E.round(credit),entry:E.round(E.number(v('entry'))),transfer,payment:payments[0].payment,months:payments[0].months,payments};
     });
   }
   function preview() {
@@ -50,7 +66,8 @@
   $('multiple').addEventListener('change',()=>{
     // Never silently discard conditions already entered.
     if(!$('multiple').checked&&cards.children.length>1){$('multiple').checked=true;status('Remova as cartas adicionais antes de desmarcar esta opção.',true);return;}
-    if($('multiple').checked&&cards.children.length===1)addCard();renumber();preview();
+    if($('multiple').checked&&cards.children.length===1&&!addCard()){$('multiple').checked=false;status('O limite é quatro grupos de parcelas. Remova um grupo antes de adicionar outra carta.',true);}
+    renumber();preview();
   });
   $('add-card').addEventListener('click',()=>{const c=addCard();preview();c?.querySelector('input').focus();});
   cards.addEventListener('change',event=>{
@@ -59,7 +76,7 @@
       card.querySelector('[data-field="transferInput"]').value=event.target.value==='percent'?'1':'0,00';
     }
   });
-  form.addEventListener('input',preview);form.addEventListener('change',preview);
+  form.addEventListener('input',()=>{preview();status('');});form.addEventListener('change',event=>{preview();if(event.target.id!=='multiple')status('');});
   function status(message,error=false){$('status').textContent=message;$('status').classList.toggle('error',error);}
   function settings() {
     const keys=$('asset').value==='imovel'?Object.keys(defaults).filter(k=>!k.startsWith('vehicle')):['vehicle-rate','vehicle-fee'];

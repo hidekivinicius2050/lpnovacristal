@@ -28,3 +28,7 @@ Taxas/encargos são editáveis, com identificação de cenário ajustado no PDF;
 ## Verificação
 
 `node scripts/test-proposals.js` valida fluxos simultâneos, quatro cartas, prazos iguais, centavos, dados inválidos, SAC contra cálculo Decimal independente do modelo aprovado, Price e juros zero. O fluxo de download e o layout A4 devem ser verificados no navegador e renderizados após mudanças em pdf.js. Mantenha as referências datadas e revise-as ao atualizar condições.
+
+## Totais já somados e grupos de parcelas
+
+Informe administradora, crédito total e entrada total uma única vez. Use “Adicionar grupo de parcelas” para incluir prazo e valor de cada grupo simultâneo. São até quatro grupos na proposta; o pagamento mensal cai conforme os prazos terminam. Os totais de crédito, entrada e transferência não são repetidos ao adicionar parcelas. O modo “Preencher cartas separadamente” continua disponível quando os valores ainda não foram somados. Os modelos completo e resumido usam o mesmo fluxo consolidado.

@@ -22,15 +22,24 @@
       if (c.credit <= 0 || c.payment <= 0 || c.entry > c.credit || c.transfer > c.credit || c.credit > 1e9) throw Error(`Revise crédito, entrada, transferência e parcela da carta ${i+1}.`);
       if (!Number.isInteger(c.months) || c.months < 1 || c.months > 420) throw Error('O prazo de cada carta deve ser de 1 a 420 meses.');
     });
-    const ends = [...new Set(cards.map(c => c.months))].sort((a,b) => a-b);
+    const plans=cards.flatMap(c=>{
+      if(c.payments===undefined)return [{months:c.months,payment:c.payment}];
+      if(!Array.isArray(c.payments)||!c.payments.length)throw Error('Informe os grupos de parcelas.');
+      return c.payments;
+    });
+    if(plans.length>4)throw Error('Use até quatro grupos de parcelas por proposta.');
+    plans.forEach((p,i)=>{
+      if(!p||!Number.isInteger(p.months)||p.months<1||p.months>420||!Number.isFinite(p.payment)||p.payment<=0)throw Error(`Revise prazo e valor do grupo de parcelas ${i+1}.`);
+    });
+    const ends = [...new Set(plans.map(c => c.months))].sort((a,b) => a-b);
     let start = 1;
     const stages = ends.map(end => {
-      const value = round(cards.filter(c => c.months >= end).reduce((s,c) => s+c.payment,0));
+      const value = round(plans.filter(c => c.months >= end).reduce((s,c) => s+c.payment,0));
       const stage = {start, end, months:end-start+1, payment:value}; start=end+1; return stage;
     });
     const sum = key => round(cards.reduce((s,c) => s+c[key],0));
     const credit=sum('credit'), entry=sum('entry'), transfer=sum('transfer');
-    const debt=round(cards.reduce((s,c)=>s+c.months*c.payment,0));
+    const debt=round(plans.reduce((s,c)=>s+c.months*c.payment,0));
     return {cards,credit,entry,transfer,debt,upfront:round(entry+transfer),total:round(entry+transfer+debt),months:ends.at(-1),stages,administrators:[...new Set(cards.map(c=>c.administrator.trim()))].join(' / ')};
   }
   function bank({principal, property, months, annual, monthly, tr=0, mip=0, dfi=0, admin=0, fee=0, system='SAC'}) {

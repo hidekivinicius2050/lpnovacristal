@@ -5,11 +5,11 @@
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#061334">
   <title>Gerador de propostas | Cristal Consórcios</title>
-  <link rel="stylesheet" href="/propostas/propostas.css?v=20261027-caminhos">
+  <link rel="stylesheet" href="/propostas/propostas.css?v=20261103-parcelas">
   <script defer src="/propostas/vendor/jspdf.umd.min.js"></script>
-  <script defer src="/propostas/engine.js?v=20261020-1"></script>
+  <script defer src="/propostas/engine.js?v=20261103-parcelas"></script>
   <script defer src="/propostas/pdf.js?v=20261021-modelos"></script>
-  <script defer src="/propostas/propostas.js?v=20261027-caminhos"></script>
+  <script defer src="/propostas/propostas.js?v=20261103-parcelas"></script>
 </head>
 <body>
   <header><div class="shell top"><img src="/assets/logo.png" alt="Cristal Consórcios" width="180" height="90"><a class="tools-link" href="/funcoes/">FUNÇÕES DA EQUIPE →</a></div></header>
@@ -24,9 +24,9 @@
           <label class="model-picker">Modelo da proposta<select id="model"><option value="completa">Completo — com resumo financeiro</option><option value="resumida">Resumido — crédito, entrada e parcelas</option></select></label>
           <p class="hint" id="model-description">Inclui prazo total, transferência, desembolso inicial e totais. A comparação com financiamento é opcional.</p>
         </section>
-        <section class="panel"><div class="section-title"><span class="number">02</span><h2>Condições das cartas</h2></div>
-          <label class="check"><input type="checkbox" id="multiple"> Mais de uma carta</label>
-          <p class="hint">As parcelas começam juntas. Ao terminar um prazo, o pagamento mensal diminui.</p>
+        <section class="panel"><div class="section-title"><span class="number">02</span><h2>Crédito, entrada e parcelas</h2></div>
+          <label class="check"><input type="checkbox" id="multiple"> Preencher cartas separadamente</label>
+          <p class="hint">Já somou o crédito e a entrada? Informe os totais uma vez e adicione os grupos de parcelas abaixo. Todos começam juntos; quando um prazo termina, o pagamento mensal diminui. Até quatro grupos por proposta.</p>
           <div id="cards"></div><button type="button" class="secondary" id="add-card" hidden>+ Adicionar carta</button>
         </section>
         <section class="panel" data-full-model><div class="section-title"><span class="number">03</span><h2>Comparativo com financiamento</h2></div>
@@ -63,10 +63,10 @@
     </form>
     <footer>CRISTAL CONSÓRCIOS <span>Brasília · (61) 3328-3000</span></footer>
   </main>
-  <template id="card-template"><fieldset class="card"><legend>Carta <span class="card-index"></span></legend><button type="button" class="remove" aria-label="Remover carta">Remover</button><div class="grid">
+  <template id="card-template"><fieldset class="card"><legend><span class="card-label">Crédito e entrada</span> <span class="card-index" hidden></span></legend><button type="button" class="remove" aria-label="Remover carta">Remover</button><div class="grid">
     <label class="wide">Administradora<input data-field="administrator" maxlength="45" placeholder="Ex.: Caixa, Itaú, Porto" required></label>
     <label>Crédito (R$)<input data-field="credit" inputmode="decimal" placeholder="0,00" required></label><label>Entrada (R$)<input data-field="entry" inputmode="decimal" placeholder="0,00" required></label>
     <label data-full-model>Transferência<select data-field="transferMode"><option value="percent">Percentual do crédito (%)</option><option value="fixed">Valor fixo (R$)</option></select></label><label data-full-model><span data-transfer-label>Transferência (%)</span><input data-field="transferInput" inputmode="decimal" value="1" required></label>
-    <label>Parcelas restantes<input data-field="months" type="number" min="1" max="420" step="1" placeholder="Ex.: 120" required></label><label>Valor da parcela (R$)<input data-field="payment" inputmode="decimal" placeholder="0,00" required></label>
-  </div></fieldset></template>
+  </div><div class="payment-groups"><fieldset class="payment-group"><legend>Grupo de parcelas <span class="payment-index">1</span></legend><div class="grid"><label>Quantidade de parcelas<input data-field="months" type="number" min="1" max="420" step="1" placeholder="Ex.: 44" required></label><label>Valor de cada parcela (R$)<input data-field="payment" inputmode="decimal" placeholder="0,00" required></label></div><button type="button" class="quiet remove-payment" hidden>Remover grupo</button></fieldset></div><button type="button" class="secondary add-payment">+ Adicionar grupo de parcelas</button></fieldset></template>
+  <template id="payment-template"><fieldset class="payment-group"><legend>Grupo de parcelas <span class="payment-index">1</span></legend><div class="grid"><label>Quantidade de parcelas<input data-field="months" type="number" min="1" max="420" step="1" placeholder="Ex.: 44" required></label><label>Valor de cada parcela (R$)<input data-field="payment" inputmode="decimal" placeholder="0,00" required></label></div><button type="button" class="quiet remove-payment" hidden>Remover grupo</button></fieldset></template>
 </body></html>

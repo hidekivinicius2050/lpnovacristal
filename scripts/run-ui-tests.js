@@ -5,7 +5,10 @@ const server=spawn(process.execPath,['scripts/serve.js'],{cwd:root,env:{...proce
 (async()=>{try{
  let ready=false;for(let i=0;i<60;i++){try{const r=await fetch(origin);if(r.ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,200));}
  if(!ready)throw Error('UI test server did not start');
- for(const name of ['catalogue-ui','catalogue-experience-ui','site-refinements-ui','functions-ui','new-quota-ui','lead-recovery-ui']){
+ const suites=['catalogue-ui','catalogue-experience-ui','site-refinements-ui','functions-ui','new-quota-ui','lead-recovery-ui','proposal-payments-ui'];
+ const selected=process.env.CRISTAL_UI_SUITES?process.env.CRISTAL_UI_SUITES.split(','):suites;
+ if(selected.some(name=>!suites.includes(name)))throw Error('Unknown UI suite');
+ for(const name of selected){
   const r=spawnSync(process.execPath,['scripts/test-'+name+'.js'],{cwd:root,env:{...process.env,CRISTAL_TEST_URL:origin},stdio:'inherit',windowsHide:true});
   if(r.status!==0)throw Error('UI suite failed: '+name);
  }
