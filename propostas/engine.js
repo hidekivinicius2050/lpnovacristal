@@ -23,18 +23,23 @@
       if (!Number.isInteger(c.months) || c.months < 1 || c.months > 420) throw Error('O prazo de cada carta deve ser de 1 a 420 meses.');
     });
     const plans=cards.flatMap(c=>{
-      if(c.payments===undefined)return [{months:c.months,payment:c.payment}];
-      if(!Array.isArray(c.payments)||!c.payments.length)throw Error('Informe os grupos de parcelas.');
-      return c.payments;
+      if(c.paymentMode!==undefined&&!['sequential','simultaneous'].includes(c.paymentMode))throw Error('Revise a ordem das parcelas.');
+      const payments=c.payments===undefined?[{months:c.months,payment:c.payment}]:c.payments;
+      if(!Array.isArray(payments)||!payments.length)throw Error('Informe os grupos de parcelas.');
+      let next=1;
+      return payments.map(p=>{
+        if(!p||!Number.isInteger(p.months)||p.months<1||p.months>420||!Number.isFinite(p.payment)||p.payment<=0)throw Error('Revise prazo e valor dos grupos de parcelas.');
+        const start=c.paymentMode==='sequential'?next:1,end=start+p.months-1;
+        next=end+1;
+        if(end>420)throw Error('O prazo total das etapas deve ser de até 420 meses.');
+        return {...p,start,end};
+      });
     });
     if(plans.length>4)throw Error('Use até quatro grupos de parcelas por proposta.');
-    plans.forEach((p,i)=>{
-      if(!p||!Number.isInteger(p.months)||p.months<1||p.months>420||!Number.isFinite(p.payment)||p.payment<=0)throw Error(`Revise prazo e valor do grupo de parcelas ${i+1}.`);
-    });
-    const ends = [...new Set(plans.map(c => c.months))].sort((a,b) => a-b);
+    const ends = [...new Set(plans.map(c => c.end))].sort((a,b) => a-b);
     let start = 1;
     const stages = ends.map(end => {
-      const value = round(plans.filter(c => c.months >= end).reduce((s,c) => s+c.payment,0));
+      const value = round(plans.filter(c => c.start <= start && c.end >= end).reduce((s,c) => s+c.payment,0));
       const stage = {start, end, months:end-start+1, payment:value}; start=end+1; return stage;
     });
     const sum = key => round(cards.reduce((s,c) => s+c[key],0));

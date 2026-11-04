@@ -6,6 +6,18 @@ const origin=process.env.CRISTAL_TEST_URL||'http://127.0.0.1:4175',out=path.reso
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()!=='GET')writes.push(r.url());});page.on('download',()=>downloads++);
  await page.goto(origin+'/propostas/');await page.locator('#client').fill('Giselle');await page.locator('#asset').selectOption('veiculo');await page.locator('#model').selectOption('resumida');
  const card=page.locator('#cards .card').first();
+ // Reproduce Lorena's already-computed flow in the default mode.
+ await page.locator('#client').fill('Lorena Barbosa');await page.locator('#asset').selectOption('imovel');await page.locator('#date').fill('2026-11-04');
+ for(const [field,value] of Object.entries({administrator:'Santander',credit:'225.500',entry:'110000',months:'187',payment:'1.186'}))await card.locator(`[data-field="${field}"]`).fill(value);
+ await card.locator('.add-payment').click();
+ await card.locator('.payment-group').nth(1).locator('[data-field=months]').fill('2');await card.locator('.payment-group').nth(1).locator('[data-field=payment]').fill('655');
+ assert.equal(await card.locator('[data-field=paymentMode]').inputValue(),'sequential');
+ assert.match(await page.locator('#preview-stages').innerText(),/1º ao 187º mês.*1.186,00.*188º ao 189º mês.*655,00/s);
+ for(const model of ['resumida','completa']){await page.locator('#model').selectOption(model);if(model==='completa')await page.locator('#compare').uncheck();const pending=page.waitForEvent('download');await page.locator('#generate').click();await(await pending).saveAs(path.join(out,'lorena-etapas-'+model+'.pdf'));}
+ assert.match(await page.locator('#preview-term').innerText(),/189 meses/);assert.match(await page.locator('#preview-debt').innerText(),/223.092,00/);
+ await page.screenshot({path:path.join(out,'lorena-etapas.png'),fullPage:true});
+ await card.locator('.payment-group').nth(1).locator('.remove-payment').click();
+ await page.locator('#client').fill('Giselle');await page.locator('#model').selectOption('resumida');await card.locator('[data-field=paymentMode]').selectOption('simultaneous');
  for(const [field,value] of Object.entries({administrator:'Caixa',credit:'100.878,38',entry:'42.000,00',months:'44',payment:'2.313,75'}))await card.locator(`[data-field="${field}"]`).fill(value);
  await card.locator('.add-payment').click();const groups=card.locator('.payment-group');await groups.nth(1).locator('[data-field=months]').fill('30');await groups.nth(1).locator('[data-field=payment]').fill('700,00');
  assert.equal(await page.locator('#cards [data-field=credit]').count(),1);assert.equal(await page.locator('#cards [data-field=entry]').count(),1);
@@ -16,7 +28,7 @@ const origin=process.env.CRISTAL_TEST_URL||'http://127.0.0.1:4175',out=path.reso
  assert.equal(await groups.count(),4);assert(await card.locator('.add-payment').isHidden());assert.equal(await page.locator('#preview-stages .stage').count(),4);
  await page.locator('#multiple').click();assert.equal(await page.locator('#multiple').isChecked(),false);assert.equal(await groups.count(),4);
  const pending=page.waitForEvent('download');await page.locator('#generate').click();await (await pending).saveAs(path.join(out,'quatro-grupos.pdf'));
- await groups.last().locator('[data-field=payment]').fill('0');await page.locator('#generate').click();await page.waitForFunction(()=>document.querySelector('#status').classList.contains('error'));assert.equal(downloads,3);
+ await groups.last().locator('[data-field=payment]').fill('0');await page.locator('#generate').click();await page.waitForFunction(()=>document.querySelector('#status').classList.contains('error'));assert.equal(downloads,5);
  await groups.last().locator('.remove-payment').click();assert.equal(await groups.count(),3);assert.equal(await page.locator('#status').innerText(),'');assert(await card.locator('.add-payment').isVisible());assert.equal(await card.locator('[data-field=credit]').inputValue(),'100.878,38');
  await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'mobile.png'),fullPage:true});
  await page.setViewportSize({width:1400,height:1000});await page.screenshot({path:path.join(out,'desktop.png'),fullPage:true});

@@ -12,6 +12,19 @@ assert.equal(grouped.debt,122805);assert.equal(grouped.total,165813.78);
 assert.deepEqual(grouped.stages,[{start:1,end:30,months:30,payment:3013.75},{start:31,end:44,months:14,payment:2313.75}]);
 for(const payments of [[],[{months:0,payment:1}],[{months:1,payment:0}],[{months:1.5,payment:20}],[{months:2,payment:NaN}],Array.from({length:5},()=>({months:12,payment:50}))])assert.throws(()=>E.consolidate([{...c(100000,30000,44,100),payments}]));
 const sameEnd=E.consolidate([{...c(100000,30000,12,100),payments:[{months:12,payment:100.01},{months:12,payment:200.02}]}]);assert.equal(sameEnd.stages.length,1);assert.equal(sameEnd.stages[0].payment,300.03);assert.equal(sameEnd.debt,3600.36);
+// Already-calculated stages run consecutively; do not sum them again.
+const lorena=E.consolidate([{...c(225500,110000,187,1186),paymentMode:'sequential',payments:[{months:187,payment:1186},{months:2,payment:655}]}]);
+assert.deepEqual(lorena.stages,[{start:1,end:187,months:187,payment:1186},{start:188,end:189,months:2,payment:655}]);
+assert.equal(lorena.months,189);assert.equal(lorena.debt,223092);assert.equal(lorena.credit,225500);assert.equal(lorena.entry,110000);
+const mixed=E.consolidate([{...c(100000,10000,2,100),paymentMode:'sequential',payments:[{months:2,payment:100},{months:3,payment:50}]},c(100000,10000,3,20)]);
+assert.deepEqual(mixed.stages,[{start:1,end:2,months:2,payment:120},{start:3,end:3,months:1,payment:70},{start:4,end:5,months:2,payment:50}]);
+assert.equal(mixed.debt,410);
+for(const paymentMode of ['sequential','simultaneous']){
+ const result=E.consolidate([{...c(100000,10000,2,100.01),paymentMode,payments:[{months:2,payment:100.01},{months:3,payment:50.02},{months:1,payment:20.03},{months:4,payment:10.04}]}]);
+ assert.equal(result.debt,E.round(result.stages.reduce((s,p)=>s+p.months*p.payment,0)));
+}
+assert.throws(()=>E.consolidate([{...c(100000,0,300,1),paymentMode:'sequential',payments:[{months:300,payment:1},{months:121,payment:1}]}]));
+assert.throws(()=>E.consolidate([{...c(100000,0,1,1),paymentMode:'unknown'}]));
 // Independently expand simultaneous payments, including equal end dates and cents.
 for(const cards of [[c(50000,10000,36,731.13)], [c(30000,5000,24,100),c(20000,2000,24,200)], [c(1e5,2e4,1,100.01),c(1e5,2e4,2,200.02),c(1e5,2e4,3,300.03),c(1e5,2e4,4,400.04)]]) {
   const out=E.consolidate(cards);let independent=0;

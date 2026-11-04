@@ -30,6 +30,7 @@
       card.querySelector('.remove').hidden=cards.children.length===1;card.querySelector('.remove').setAttribute('aria-label',`Remover carta ${i+1}`);
       const groups=card.querySelectorAll('.payment-group');groups.forEach((group,j)=>{group.querySelector('.payment-index').textContent=j+1;group.querySelector('.remove-payment').hidden=groups.length===1;group.querySelector('.remove-payment').setAttribute('aria-label',`Remover grupo de parcelas ${j+1} da carta ${i+1}`);});
       card.querySelector('.add-payment').hidden=groupCount()>=4;
+      card.querySelector('.payment-mode-hint').textContent=card.querySelector('[data-field="paymentMode"]').value==='sequential'?'As etapas seguem a ordem informada. Os valores não são somados entre si.':'Todos os grupos começam juntos. O valor mensal diminui quando um prazo termina.';
     });
     $('add-card').hidden=!$('multiple').checked||groupCount()>=4;
   }
@@ -39,7 +40,7 @@
       const credit=E.number(v('credit')),transferValue=E.number(v('transferInput'));
       const transfer=$('model').value==='resumida'?0:v('transferMode')==='percent'?E.round(credit*transferValue/100):transferValue;
       const payments=[...card.querySelectorAll('.payment-group')].map(group=>({months:Number(group.querySelector('[data-field="months"]').value),payment:E.round(E.number(group.querySelector('[data-field="payment"]').value))}));
-      return {administrator:v('administrator'),credit:E.round(credit),entry:E.round(E.number(v('entry'))),transfer,payment:payments[0].payment,months:payments[0].months,payments};
+      return {administrator:v('administrator'),credit:E.round(credit),entry:E.round(E.number(v('entry'))),transfer,payment:payments[0].payment,months:payments[0].months,payments,paymentMode:v('paymentMode')};
     });
   }
   function preview() {
@@ -71,6 +72,7 @@
   });
   $('add-card').addEventListener('click',()=>{const c=addCard();preview();c?.querySelector('input').focus();});
   cards.addEventListener('change',event=>{
+    if(event.target.dataset.field==='paymentMode')renumber();
     if(event.target.dataset.field==='transferMode') {
       const card=event.target.closest('.card');card.querySelector('[data-transfer-label]').textContent=event.target.value==='percent'?'Transferência (%)':'Transferência (R$)';
       card.querySelector('[data-field="transferInput"]').value=event.target.value==='percent'?'1':'0,00';
