@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const E=ProposalEngine, $=id=>document.getElementById(id), cards=$('cards'), form=$('proposal-form');
-  const defaults={'itau-rate':13.85,'bradesco-rate':15,'itau-fee':3420,'bradesco-fee':0,tr:.1616,admin:25,mip:.03073,dfi:.00899,'vehicle-rate':1.97,'vehicle-fee':0};
+  const defaults={'itau-rate':13.85,'bradesco-rate':15,'itau-fee':3420,'bradesco-fee':3400,'itau-extra':0,'bradesco-extra':0,'letter-extra':0,'letter-adjustment':0,tr:.1616,admin:25,mip:.03073,dfi:.00899,'vehicle-rate':1.97,'vehicle-fee':0};
   $('date').value=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let logoPromise;
   function loadLogo() {
@@ -94,16 +94,19 @@
       if(!client){$('client').focus();throw Error('Preencha o nome do cliente.');}
       if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T12:00:00'))){$('date').focus();throw Error('Informe uma data válida.');}
       const summary=E.consolidate(readCards()),asset=$('asset').value,model=$('model').value;
-      let config={},edited=false,banks=[];
+      let config={},edited=false,banks=[],letterComparison;
       if(model!=='resumida'&&$('compare').checked){
         if(summary.entry>=summary.credit)throw Error('Para comparar com financiamento, a entrada deve ser menor que o crédito.');
         ({config,edited}=settings());
         const common={principal:E.round(summary.credit-summary.entry),property:summary.credit,months:summary.months};
-        if(asset==='imovel')banks=[['Itaú','itau'],['Bradesco','bradesco']].map(([name,id])=>({name,rateLabel:config[id+'-rate'].toLocaleString('pt-BR')+'% a.a.',...E.bank({...common,annual:config[id+'-rate'],tr:config.tr,mip:config.mip,dfi:config.dfi,admin:config.admin,fee:config[id+'-fee']})}));
+        if(asset==='imovel'){
+          letterComparison=E.projectLetter(summary,{annualAdjustment:config['letter-adjustment'],extraFees:config['letter-extra']});
+          banks=[['Itaú','itau'],['Bradesco','bradesco']].map(([name,id])=>({name,rateLabel:config[id+'-rate'].toLocaleString('pt-BR')+'% a.a.',...E.bank({...common,annual:config[id+'-rate'],tr:config.tr,mip:config.mip,dfi:config.dfi,admin:config.admin,fee:config[id+'-fee'],extraFees:config[id+'-extra']})}));
+        }
         else banks=[{name:'Mercado (BCB)',rateLabel:config['vehicle-rate'].toLocaleString('pt-BR')+'% a.m.',...E.bank({...common,monthly:config['vehicle-rate'],fee:config['vehicle-fee'],system:'Price'})}];
       }
       $('generate').disabled=true;status('Gerando o PDF…');
-      const data={client,date,summary,asset,model,banks,config,edited,reference:$('custom-reference').value.trim()};
+      const data={client,date,summary,asset,model,banks,config,edited,letterComparison,reference:$('custom-reference').value.trim()};
       const {doc,filename}=await makeProposalPDF(data,await loadLogo());
       await doc.save(filename,{returnPromise:true});status('PDF gerado. Confira os downloads do navegador.');
     } catch(error){status(error.message||'Não foi possível gerar o PDF. Tente novamente.',true);}

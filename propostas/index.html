@@ -5,11 +5,11 @@
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#061334">
   <title>Gerador de propostas | Cristal Consórcios</title>
-  <link rel="stylesheet" href="/propostas/propostas.css?v=20261104-bradesco">
+  <link rel="stylesheet" href="/propostas/propostas.css?v=20261104-encargos">
   <script defer src="/propostas/vendor/jspdf.umd.min.js"></script>
-  <script defer src="/propostas/engine.js?v=20261104-bradesco"></script>
-  <script defer src="/propostas/pdf.js?v=20261104-bradesco"></script>
-  <script defer src="/propostas/propostas.js?v=20261104-bradesco"></script>
+  <script defer src="/propostas/engine.js?v=20261104-encargos"></script>
+  <script defer src="/propostas/pdf.js?v=20261104-encargos"></script>
+  <script defer src="/propostas/propostas.js?v=20261104-encargos"></script>
 </head>
 <body>
   <header><div class="shell top"><img src="/assets/logo.png" alt="Cristal Consórcios" width="180" height="90"><a class="tools-link" href="/funcoes/">FUNÇÕES DA EQUIPE →</a></div></header>
@@ -33,12 +33,12 @@
           <label class="check"><input id="compare" type="checkbox" checked> Incluir comparação no PDF</label>
           <p class="hint">Mesmo valor do bem, entrada e prazo da carta. Referências editáveis; não representam uma proposta aprovada.</p>
           <details id="assumptions"><summary>Ajustar taxas e encargos</summary>
-            <div id="property-settings"><p class="hint">SAC · perfil técnico de 40 anos. Bradesco: juros de 15% a.a. informados pela equipe; avaliação não incluída até informar o valor.</p>
+            <div id="property-settings"><p class="hint">SAC · perfil técnico de 40 anos. Bradesco: juros de 15% a.a. informados pela equipe; avaliação de referência de R$ 3.400, conforme tabela PF Private.</p>
               <div class="grid"><label>Itaú · juros (% a.a.)<input id="itau-rate" type="number" min="0" max="100" step="0.01" value="13.85"></label><label>Bradesco · juros (% a.a.)<input id="bradesco-rate" type="number" min="0" max="100" step="0.01" value="15"></label>
-              <label>Itaú · avaliação (R$)<input id="itau-fee" inputmode="decimal" value="3.420,00"></label><label>Bradesco · avaliação (R$)<input id="bradesco-fee" inputmode="decimal" value="0,00"></label>
-              <label>TR do cenário (% a.m.)<input id="tr" type="number" min="0" max="5" step="0.0001" value="0.1616"></label><label>Administração mensal por banco (R$)<input id="admin" inputmode="decimal" value="25,00"></label>
+              <label>Itaú · avaliação (R$)<input id="itau-fee" inputmode="decimal" value="3.420,00"></label><label>Bradesco · avaliação (R$)<input id="bradesco-fee" inputmode="decimal" value="3.400,00"></label>
+              <label>Itaú · outras despesas cotadas (R$)<input id="itau-extra" inputmode="decimal" value="0,00"></label><label>Bradesco · outras despesas cotadas (R$)<input id="bradesco-extra" inputmode="decimal" value="0,00"></label><label>Carta · custos adicionais (R$)<input id="letter-extra" inputmode="decimal" value="0,00"></label><label>Carta · reajuste estimado (% a.a.)<input id="letter-adjustment" type="number" min="0" max="100" step="0.01" value="0"></label><label>TR do cenário (% a.m.)<input id="tr" type="number" min="0" max="5" step="0.0001" value="0.1616"></label><label>Administração mensal por banco (R$)<input id="admin" inputmode="decimal" value="25,00"></label>
               <label>MIP · saldo (% a.m.)<input id="mip" type="number" min="0" max="5" step="0.00001" value="0.03073"></label><label>DFI · imóvel (% a.m.)<input id="dfi" type="number" min="0" max="5" step="0.00001" value="0.00899"></label></div>
-              <p class="hint">Seguros são uma hipótese técnica uniforme, calibrada em apólice histórica (2012), e não preços atuais de Itaú ou Bradesco. A idade fica constante em 40 anos. TR constante é cenário, não previsão. Substitua pelas condições cotadas quando disponíveis.</p>
+              <p class="hint">Informe apenas despesas adicionais às avaliações e à transferência já preenchidas, para não contar duas vezes. Reajuste da carta: 0 mantém os valores atuais; preencha a hipótese contratual para projetar aumentos a cada 12 meses. ITBI e registro não entram em nenhuma opção.</p><p class="hint">Seguros são uma hipótese técnica uniforme, calibrada em apólice histórica (2012), e não preços atuais de Itaú ou Bradesco. A idade fica constante em 40 anos. TR constante é cenário, não previsão. Substitua pelas condições cotadas quando disponíveis.</p>
             </div>
             <div id="vehicle-settings" hidden><p class="hint">Tabela Price · média do mercado publicada pelo BCB, agosto/2026. Não é taxa específica de um banco. Seguros e tarifas imobiliárias não se aplicam.</p>
               <div class="grid"><label>Juros de referência (% a.m.)<input id="vehicle-rate" type="number" min="0" max="10" step="0.01" value="1.97"></label><label>IOF e despesas iniciais cotados (R$)<input id="vehicle-fee" inputmode="decimal" value="0,00"></label></div>
@@ -50,7 +50,7 @@
               <li><a href="https://www.itau.com.br/emprestimos-financiamentos/credito-imobiliario" target="_blank" rel="noreferrer">Itaú: juros imobiliários a partir de 13,85% a.a. + TR</a></li>
               <li>Bradesco: cenário de 15% a.a. informado pela equipe em 04/11/2026; não é uma cotação bancária.</li>
               <li><a href="https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf" target="_blank" rel="noreferrer">Itaú: tabela de tarifas Personnalité (referência)</a></li>
-              <li>Bradesco: preencha a avaliação conforme a cotação; sem valor informado, fica fora do total. Administração mensal e seguros são hipóteses editáveis.</li>
+              <li><a href="https://exclusive.bradesco/assets/private/docs/vigencia.pdf" target="_blank" rel="noreferrer">Bradesco: tabela PF Private vigente desde 03/11/2026; avaliação R$ 3.400 e administração R$ 25/mês, conforme enquadramento.</a></li>
               <li><a href="https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarSeries&amp;series=7811" target="_blank" rel="noreferrer">BCB: TR de 01/10/2026</a></li>
               <li><a href="https://ww3.itau.com.br/imobline/pos/contrato/apolices_pdf/4F.pdf" target="_blank" rel="noreferrer">Seguros: calibração histórica fora do SFH (2012)</a></li>
               <li><a href="https://dadosabertos.bcb.gov.br/dataset/25471-taxa-media-mensal-de-juros-das-operacoes-de-credito-com-recursos-livres---pessoas-fisicas---a" target="_blank" rel="noreferrer">BCB: média de juros de veículos, série 25471</a></li>

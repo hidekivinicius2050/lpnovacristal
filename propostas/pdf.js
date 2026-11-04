@@ -67,6 +67,7 @@
       ['Carta',...data.banks.map(b=>b.name)].forEach((label,i)=>text(cols[i],252,label,8.5,C.navy,true,'right'));
       rule(264);
       const entries=fn=>data.banks.map(fn), dash='Não se aplica';
+      const letter=data.letterComparison||{total:s.total,last:s.stages.at(-1).payment,extraFees:0,annualAdjustment:0,adjustment:0};
       const rows=[
         ['Valor do bem',m(s.credit),...entries(()=>m(s.credit))],
         ['Entrada',m(s.entry),...entries(()=>m(s.entry))],
@@ -74,28 +75,37 @@
         ['Prazo de comparação',`${s.months} meses`,...entries(()=>`${s.months} meses`)],
         ['Juros de referência',dash,...entries(b=>b.rateLabel)],
         ['Parcela inicial estimada',m(s.stages[0].payment),...entries(b=>m(b.first))],
-        ['Parcela final estimada',m(s.stages.at(-1).payment),...entries(b=>m(b.last))]
+        ['Parcela final estimada',m(letter.last),...entries(b=>m(b.last))]
       ];
       if(data.asset==='imovel') rows.push(
         ['TR no cenário','Conforme contrato',...entries(()=>data.config.tr.toLocaleString('pt-BR',{maximumFractionDigits:4})+'% a.m.')],
         ['MIP + DFI na 1ª parcela','Conforme contrato',...entries(b=>m(b.insurance))],
         ['Avaliação do imóvel','Não informada',...entries(b=>b.fee?m(b.fee):'Não informada')],
-        ['Administração mensal','Conforme contrato',...entries(b=>m(b.admin))]
+        ['Administração mensal','Conforme contrato',...entries(b=>m(b.admin))],
+        ['Juros + correção no prazo','Incluídos nas parcelas',...entries(b=>m(b.interestCorrection))],
+        ['Seguros no prazo','Conforme contrato',...entries(b=>m(b.insuranceTotal))],
+        ['Administração no prazo','Incluída nas parcelas',...entries(b=>m(b.adminTotal))],
+        ['Outros custos informados',m(letter.extraFees),...entries(b=>m(b.extraFees))]
       ); else rows.push(['IOF e despesas informados','Não informados',...entries(b=>m(b.fee))]);
-      rows.push(['Total de referência¹',m(s.total),...entries(b=>m(b.total+s.entry))],['Base do total','Valores atuais',...entries(()=>data.asset==='imovel'?'Projeção com encargos':'Projeção de referência')]);
+      rows.push(['Total do comparativo¹',m(letter.total),...entries(b=>m(b.total+s.entry))],['Base do total',letter.annualAdjustment?'Projeção informada':'Valores atuais',...entries(()=>data.asset==='imovel'?'Projeção com encargos':'Projeção de referência')]);
+      const rowHeight=data.asset==='imovel'?19:26;
       rows.forEach((row,i)=>{
-        const top=284+i*26,highlight=row[0]==='Total de referência¹';
-        if(highlight)box(L,top-16,BW,26,C.light,2);
+        const top=284+i*rowHeight,highlight=row[0]==='Total do comparativo¹';
+        if(highlight)box(L,top-13,BW,rowHeight,C.light,2);
         text(L,top,row[0],8.5,highlight?C.navy:C.muted,highlight);
         row.slice(1).forEach((v,j)=>text(cols[j],top,v,8.2,C.ink,highlight,'right'));
       });
-      rule(632);box(L,650,BW,48);
-      text(L+14,671,'Compromisso inicial mensal',15,C.navy,true);
-      text(L+14,689,`Carta: ${m(s.stages[0].payment)}. Financiamento: ${data.banks.map(b=>m(b.first)).join(' / ')}.`,8.4,C.muted);
-      const notes=['¹ Carta: total nominal atual, sem reajustes futuros ou despesas não informadas. Não representa economia final garantida. Financiamentos são estimativas, não cotações nem CET.'];
+      rule(617);box(L,632,BW,68);
+      text(L+14,650,'Diferença entre os totais do cenário¹',12,C.navy,true);
+      data.banks.forEach((b,i)=>{
+        const difference=E.round(b.total+s.entry-letter.total),x=L+14+i*(BW/2);
+        text(x,667,`${b.name}: financiamento ${difference>0?'a mais':difference<0?'a menos':'com mesmo total'}`,8,C.muted);
+        text(x,688,m(Math.abs(difference)),18,C.navy,true);
+      });
+      const notes=[`¹ Diferenças estimadas, não economia garantida. Carta: ${letter.annualAdjustment?'reajuste informado':'valores atuais, sem reajustes futuros'}. Despesas não informadas excluídas. Financiamentos não são cotações nem CET.`];
       if(data.asset==='imovel') {
-        notes.push('Bradesco: juros informados pela equipe. Avaliação não informada fica fora do total.');
-        notes.push(`TR constante como hipótese. Avaliação paga no início. ITBI e registro excluídos das duas opções. Seguros: MIP ${data.config.mip.toLocaleString('pt-BR',{maximumFractionDigits:5})}% do saldo e DFI ${data.config.dfi.toLocaleString('pt-BR',{maximumFractionDigits:5})}% do imóvel por mês; perfil fixo de 40 anos, calibração histórica (2012), não tarifas vigentes.`);
+        notes.push(`Carta: reajuste de ${letter.annualAdjustment.toLocaleString('pt-BR')}% a.a. aplicado após cada 12 meses; com 0%, sem projeção de reajustes. Transferência e custos informados incluídos. ITBI e registro excluídos das duas opções.`);
+        notes.push(`Bradesco: juros da equipe; avaliação conforme enquadramento. TR constante. Seguros estimados: MIP ${data.config.mip.toLocaleString('pt-BR',{maximumFractionDigits:5})}% do saldo e DFI ${data.config.dfi.toLocaleString('pt-BR',{maximumFractionDigits:5})}% do imóvel/mês; perfil fixo de 40 anos, referência histórica de 2012, não cotação atual.`);
       } else {
         notes.push('Média de mercado BCB (agosto/2026), não oferta específica de Itaú ou Bradesco. IOF, seguros e tarifas excluídos quando não informados. Prazo meramente comparativo, sujeito aos limites comerciais do banco.');
       }
@@ -110,11 +120,12 @@
         ['Juros Itaú','https://www.itau.com.br/emprestimos-financiamentos/credito-imobiliario'],
         ['TR BCB','https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarSeries&series=7811'],
         ['Seguros históricos','https://ww3.itau.com.br/imobline/pos/contrato/apolices_pdf/4F.pdf'],
-        ['Tarifas Itaú','https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf']
+        ['Tarifas Itaú','https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf'],
+        ['Tarifas Bradesco','https://exclusive.bradesco/assets/private/docs/vigencia.pdf']
       ] : [['Juros BCB: série 25471','https://dadosabertos.bcb.gov.br/dataset/25471-taxa-media-mensal-de-juros-das-operacoes-de-credito-com-recursos-livres---pessoas-fisicas---a']];
       let linkX=L;doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(C.navy);
       sources.forEach(([label,url])=>{doc.textWithLink(label,linkX,775,{url});linkX+=doc.getTextWidth(label)+14;});
-      text(L,785,'Referências consultadas em 20/10/2026. Condições editadas prevalecem no cenário.',6.4,C.muted);
+      text(L,785,'Tarifas revistas em 04/11/2026; demais referências de 20/10/2026. Premissas editadas prevalecem.',6.4,C.muted);
     }
     doc.setProperties({title:`Proposta - ${data.client} - ${m(s.credit)} - ${date.toLocaleDateString('pt-BR')}`,author:'Cristal Consórcios',subject:'Proposta de carta contemplada'});
     const safe=clean(data.client).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9 -]/g,'').replace(/\s+/g,' ').slice(0,65)||'Cliente';

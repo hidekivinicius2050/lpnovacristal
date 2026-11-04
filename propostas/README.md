@@ -17,7 +17,7 @@ Mesmos valor do bem, entrada e prazo máximo das cartas. Principal bancário = c
 Imóvel: SAC com juros efetivos anuais convertidos em mensais. Atualização hipotética mensal do saldo e amortização pela TR; seguros sobre saldo atualizado e valor inicial do imóvel, sem projeção de mudança de idade. Arredondamento a centavos de prestação, seguros e encargos. Valores iniciais de referência consultados em 20/10/2026:
 
 - Itaú: 13,85% a.a. + TR, a partir, https://www.itau.com.br/emprestimos-financiamentos/credito-imobiliario . Avaliação R$ 3.420 e administração R$ 25/mês: tabela Personnalité (não universal), https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf .
-- Bradesco: 15% a.a. + TR como premissa solicitada pela equipe em 04/11/2026, sem atribuição de cotação pública. Avaliação sem preço confirmado começa em R$ 0 (excluída até preenchimento); não se reaproveita a tarifa do Santander. Administração mensal e seguros são hipóteses uniformes editáveis, não tarifas confirmadas do Bradesco.
+- Bradesco: 15% a.a. + TR como premissa solicitada pela equipe em 04/11/2026, sem atribuição de cotação pública. Avaliação R$ 3.400 e administração R$ 25/mês como referências da tabela PF Private vigente desde 03/11/2026, conforme enquadramento: https://exclusive.bradesco/assets/private/docs/vigencia.pdf . Seguros seguem a hipótese técnica uniforme, não cotação atual do Bradesco.
 - TR 0,1616% a.m.: BCB série 7811, observação 01/10/2026. Mantê-la constante é hipótese, não previsão. https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarSeries&series=7811 .
 - MIP 0,03073% do saldo e DFI 0,00899% do imóvel/mês: calibração histórica perfil de 40 anos em apólice de 2012 fora do SFH, https://ww3.itau.com.br/imobline/pos/contrato/apolices_pdf/4F.pdf . **Não são taxas vigentes das ofertas, nem média estatística ou cotação atual.** Idade constante é proxy uniforme para comparação, não reprodução da apólice histórica. Deve-se substituir pelas condições cotadas quando disponíveis.
 
@@ -32,3 +32,9 @@ Taxas/encargos são editáveis, com identificação de cenário ajustado no PDF;
 ## Totais já somados e grupos de parcelas
 
 Informe administradora, crédito total e entrada total uma única vez. O padrão “Etapas prontas — uma após a outra” recebe o fluxo já calculado: 187 × R$ 1.186 e depois 2 × R$ 655 resultam em 189 meses, sem somar os valores novamente. Selecione “Parcelas simultâneas — somar os valores” quando os grupos começarem juntos. Use “Adicionar grupo de parcelas” para incluir até quatro grupos por proposta. O prazo total de cada carta não pode ultrapassar 420 meses. Os totais de crédito, entrada e transferência não são repetidos ao adicionar parcelas. O modo “Preencher cartas separadamente” continua disponível quando os valores ainda não foram somados. Os modelos completo e resumido usam o mesmo fluxo consolidado.
+
+## Encargos e diferença no cenário
+
+O comparativo inclui avaliação, seguros, administração e outras despesas cotadas por banco. Juros e correção no prazo são reconciliados com o principal, os seguros, a administração e as despesas, sem somar encargos duas vezes. O PDF destaca a diferença assinada entre cada financiamento e a carta; se o financiamento custar menos, mostra isso.
+
+Custos adicionais da carta e reajuste anual são opcionais e exclusivos do comparativo. Com 0% a carta permanece em valores atuais; com reajuste informado, cada parcela é corrigida após cada 12 meses completos. A primeira página continua mostrando as condições atuais da carta. Não se assume uma taxa contratual ausente. ITBI e registro ficam fora das duas opções; não é cálculo de CET ou economia garantida.

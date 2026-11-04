@@ -47,4 +47,15 @@ const price=E.bank({principal:10000,property:20000,months:12,monthly:1,system:'P
 assert.equal(price.first,888.49);assert.equal(price.last,888.49);assert.equal(price.total,10661.88);
 const zero=E.bank({principal:1200,property:1200,months:12,monthly:0,system:'Price'});assert.equal(zero.first,100);assert.equal(zero.total,1200);
 assert.throws(()=>E.bank({principal:0,property:100,months:10,annual:10}));
+const charges=E.bank({...base,annual:15,fee:3400,extraFees:600});
+assert.equal(E.round(base.principal+charges.interestCorrection+charges.insuranceTotal+charges.adminTotal+charges.fee+charges.extraFees),charges.total);
+assert.equal(charges.total-E.bank({...base,annual:15,fee:3400}).total,600);
+assert.equal(charges.adminTotal,25*123);assert(charges.insuranceTotal>0);
+const yearly=E.projectLetter(E.consolidate([c(50000,10000,25,100)]),{annualAdjustment:10,extraFees:200});
+assert.equal(yearly.installments,2641);assert.equal(yearly.total,13341);assert.equal(yearly.last,121);assert.equal(yearly.adjustment,141);
+assert.equal(E.projectLetter(lorena).total,lorena.total);
+assert.equal(E.projectLetter(lorena,{extraFees:500}).total,lorena.total+500);
+assert.throws(()=>E.projectLetter(lorena,{annualAdjustment:-1}));assert.throws(()=>E.projectLetter(lorena,{extraFees:NaN}));
+// A cheap financing remains cheaper; no forced positive savings.
+assert(E.bank({principal:1000,property:2000,months:12,annual:0}).total+1000-E.projectLetter(E.consolidate([c(2000,1000,12,200)])).total<0);
 console.log('PASS: simultaneous flows, four cards, tied terms, cents, validation, reviewed SAC totals, Price and zero interest.');

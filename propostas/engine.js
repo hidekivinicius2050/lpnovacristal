@@ -47,8 +47,15 @@
     const debt=round(plans.reduce((s,c)=>s+c.months*c.payment,0));
     return {cards,credit,entry,transfer,debt,upfront:round(entry+transfer),total:round(entry+transfer+debt),months:ends.at(-1),stages,administrators:[...new Set(cards.map(c=>c.administrator.trim()))].join(' / ')};
   }
-  function bank({principal, property, months, annual, monthly, tr=0, mip=0, dfi=0, admin=0, fee=0, system='SAC'}) {
-    const values=[principal,property,months,tr,mip,dfi,admin,fee, annual ?? monthly];
+  function projectLetter(summary,{annualAdjustment=0,extraFees=0}={}) {
+    if(!Number.isFinite(annualAdjustment)||annualAdjustment<0||annualAdjustment>100||!Number.isFinite(extraFees)||extraFees<0)throw Error('Revise o reajuste e os custos adicionais da carta.');
+    let installments=0;
+    for(const stage of summary.stages)for(let month=stage.start;month<=stage.end;month++)installments+=round(stage.payment*Math.pow(1+annualAdjustment/100,Math.floor((month-1)/12)));
+    installments=round(installments);
+    return {annualAdjustment,extraFees,installments,total:round(summary.upfront+installments+extraFees),adjustment:round(installments-summary.debt),last:round(summary.stages.at(-1).payment*Math.pow(1+annualAdjustment/100,Math.floor((summary.months-1)/12)))};
+  }
+  function bank({principal, property, months, annual, monthly, tr=0, mip=0, dfi=0, admin=0, fee=0, extraFees=0, system='SAC'}) {
+    const values=[principal,property,months,tr,mip,dfi,admin,fee,extraFees, annual ?? monthly];
     if(values.some(v=>!Number.isFinite(v)||v<0)||principal<=0||!Number.isInteger(months)||months<1||months>420) throw Error('Revise as premissas do financiamento.');
     const rate = monthly !== undefined ? monthly/100 : Math.pow(1+annual/100,1/12)-1;
     const trRate=tr/100, payments=[], insurances=[];
@@ -67,7 +74,8 @@
       }
       payments.push(round(payment)); insurances.push(insurance);
     }
-    return {first:payments[0],last:payments.at(-1),total:round(payments.reduce((s,p)=>s+p,0)+fee),insurance:insurances[0],payments,fee,admin,rate};
+    const installmentTotal=round(payments.reduce((s,p)=>s+p,0)),insuranceTotal=round(insurances.reduce((s,p)=>s+p,0)),adminTotal=round(admin*months);
+    return {first:payments[0],last:payments.at(-1),total:round(installmentTotal+fee+extraFees),insurance:insurances[0],insuranceTotal,adminTotal,interestCorrection:round(installmentTotal-principal-insuranceTotal-adminTotal),payments,fee,extraFees,admin,rate};
   }
-  return {round,money,number,consolidate,bank};
+  return {round,money,number,consolidate,projectLetter,bank};
 });
