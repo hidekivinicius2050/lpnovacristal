@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   const E=ProposalEngine, $=id=>document.getElementById(id), cards=$('cards'), form=$('proposal-form');
-  const defaults={'itau-rate':13.85,'santander-rate':11.69,'itau-fee':3420,'santander-fee':3300,tr:.1616,admin:25,mip:.03073,dfi:.00899,'vehicle-rate':1.97,'vehicle-fee':0};
+  const defaults={'itau-rate':13.85,'bradesco-rate':15,'itau-fee':3420,'bradesco-fee':0,tr:.1616,admin:25,mip:.03073,dfi:.00899,'vehicle-rate':1.97,'vehicle-fee':0};
   $('date').value=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
   let logoPromise;
   function loadLogo() {
@@ -99,7 +99,7 @@
         if(summary.entry>=summary.credit)throw Error('Para comparar com financiamento, a entrada deve ser menor que o crédito.');
         ({config,edited}=settings());
         const common={principal:E.round(summary.credit-summary.entry),property:summary.credit,months:summary.months};
-        if(asset==='imovel')banks=[['Itaú','itau'],['Santander','santander']].map(([name,id])=>({name,rateLabel:config[id+'-rate'].toLocaleString('pt-BR')+'% a.a.',...E.bank({...common,annual:config[id+'-rate'],tr:config.tr,mip:config.mip,dfi:config.dfi,admin:config.admin,fee:config[id+'-fee']})}));
+        if(asset==='imovel')banks=[['Itaú','itau'],['Bradesco','bradesco']].map(([name,id])=>({name,rateLabel:config[id+'-rate'].toLocaleString('pt-BR')+'% a.a.',...E.bank({...common,annual:config[id+'-rate'],tr:config.tr,mip:config.mip,dfi:config.dfi,admin:config.admin,fee:config[id+'-fee']})}));
         else banks=[{name:'Mercado (BCB)',rateLabel:config['vehicle-rate'].toLocaleString('pt-BR')+'% a.m.',...E.bank({...common,monthly:config['vehicle-rate'],fee:config['vehicle-fee'],system:'Price'})}];
       }
       $('generate').disabled=true;status('Gerando o PDF…');

@@ -79,7 +79,7 @@
       if(data.asset==='imovel') rows.push(
         ['TR no cenário','Conforme contrato',...entries(()=>data.config.tr.toLocaleString('pt-BR',{maximumFractionDigits:4})+'% a.m.')],
         ['MIP + DFI na 1ª parcela','Conforme contrato',...entries(b=>m(b.insurance))],
-        ['Avaliação do imóvel','Não informada',...entries(b=>m(b.fee))],
+        ['Avaliação do imóvel','Não informada',...entries(b=>b.fee?m(b.fee):'Não informada')],
         ['Administração mensal','Conforme contrato',...entries(b=>m(b.admin))]
       ); else rows.push(['IOF e despesas informados','Não informados',...entries(b=>m(b.fee))]);
       rows.push(['Total de referência¹',m(s.total),...entries(b=>m(b.total+s.entry))],['Base do total','Valores atuais',...entries(()=>data.asset==='imovel'?'Projeção com encargos':'Projeção de referência')]);
@@ -94,9 +94,10 @@
       text(L+14,689,`Carta: ${m(s.stages[0].payment)}. Financiamento: ${data.banks.map(b=>m(b.first)).join(' / ')}.`,8.4,C.muted);
       const notes=['¹ Carta: total nominal atual, sem reajustes futuros ou despesas não informadas. Não representa economia final garantida. Financiamentos são estimativas, não cotações nem CET.'];
       if(data.asset==='imovel') {
+        notes.push('Bradesco: juros informados pela equipe. Avaliação não informada fica fora do total.');
         notes.push(`TR constante como hipótese. Avaliação paga no início. ITBI e registro excluídos das duas opções. Seguros: MIP ${data.config.mip.toLocaleString('pt-BR',{maximumFractionDigits:5})}% do saldo e DFI ${data.config.dfi.toLocaleString('pt-BR',{maximumFractionDigits:5})}% do imóvel por mês; perfil fixo de 40 anos, calibração histórica (2012), não tarifas vigentes.`);
       } else {
-        notes.push('Média de mercado BCB (agosto/2026), não oferta específica de Itaú ou Santander. IOF, seguros e tarifas excluídos quando não informados. Prazo meramente comparativo, sujeito aos limites comerciais do banco.');
+        notes.push('Média de mercado BCB (agosto/2026), não oferta específica de Itaú ou Bradesco. IOF, seguros e tarifas excluídos quando não informados. Prazo meramente comparativo, sujeito aos limites comerciais do banco.');
       }
       if(data.edited||data.reference)notes.push('Cenário informado pela equipe. '+(data.reference||'Taxas e encargos alterados manualmente.'));
       let noteSize=7.4;
@@ -107,11 +108,9 @@
       notes.forEach(n=>{noteY=paragraph(n,noteY,noteSize,noteSize*1.25)+2;});
       const sources=data.asset==='imovel' ? [
         ['Juros Itaú','https://www.itau.com.br/emprestimos-financiamentos/credito-imobiliario'],
-        ['Juros Santander','https://www.santander.com.br/creditos-e-financiamentos/para-sua-casa/portabilidade-de-financiamento-imobiliario/'],
         ['TR BCB','https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarSeries&series=7811'],
         ['Seguros históricos','https://ww3.itau.com.br/imobline/pos/contrato/apolices_pdf/4F.pdf'],
-        ['Tarifas Itaú','https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf'],
-        ['Tarifas Santander','https://www.santander.com.br/parceiros-imobiliarios']
+        ['Tarifas Itaú','https://www.itau.com.br/media/dam/m/1cb6b49051855b32/original/personnalite-tabela-geral.pdf']
       ] : [['Juros BCB: série 25471','https://dadosabertos.bcb.gov.br/dataset/25471-taxa-media-mensal-de-juros-das-operacoes-de-credito-com-recursos-livres---pessoas-fisicas---a']];
       let linkX=L;doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(C.navy);
       sources.forEach(([label,url])=>{doc.textWithLink(label,linkX,775,{url});linkX+=doc.getTextWidth(label)+14;});
